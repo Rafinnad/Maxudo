@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Maxudo Team Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-main: #090d16;
+      --bg-card: #121826;
+      --bg-card-hover: #1a2235;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --neon-primary: #7c3aed;
+      --neon-secondary: #06b6d4;
+      --neon-glow: rgba(124, 58, 237, 0.45);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at top right, #1e1b4b 0%, var(--bg-main) 45%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 14px 14px 90px 14px;
+    }
+
+    /* Верхняя панель */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(18, 24, 38, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 0 15px var(--neon-glow);
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.3px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .lang-switch {
+      display: flex;
+      background: #0b0f19;
+      border-radius: 10px;
+      padding: 3px;
+      border: 1px solid var(--border-color);
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .lang-btn.active {
+      background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+      color: #fff;
+      box-shadow: 0 0 10px var(--neon-glow);
+    }
+
+    /* Навигационные табы */
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 10px 6px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn span {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .tab-btn.active {
+      background: rgba(124, 58, 237, 0.16);
+      border-color: var(--neon-primary);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(124, 58, 237, 0.3);
+    }
+
+    /* Секции и шаги */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .step-badge {
+      background: rgba(6, 182, 212, 0.15);
+      color: #22d3ee;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Кликабельные карточки */
+    .cards-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .cards-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .option-card {
+      background: #0d1320;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .option-card:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .option-card.selected {
+      background: rgba(124, 58, 237, 0.18);
+      border-color: var(--neon-primary);
+      box-shadow: 0 0 12px var(--neon-glow);
+    }
+
+    .option-icon {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .option-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .option-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Поля ввода */
+    .input-field, .textarea-field {
+      width: 100%;
+      background: #0b0f19;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: #fff;
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 10px;
+      transition: border 0.2s;
+    }
+
+    .input-field:focus, .textarea-field:focus {
+      border-color: var(--neon-secondary);
+    }
+
+    .textarea-field {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    /* Главная неоновая кнопка действия */
+    .action-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+      border: none;
+      border-radius: var(--radius-md);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 15px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--neon-glow);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      margin-top: 6px;
+    }
+
+    .action-btn:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    .hint-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Верхняя панель -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo">🇺🇸</div>
+      <div>
+        <div class="brand-title">MAXUDO APP</div>
+        <div class="brand-sub" id="userGreeting">Clipper Studio v3.5</div>
+      </div>
+    </div>
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="setLang('ru')" id="btnRu">RU</button>
+      <button class="lang-btn" onclick="setLang('en')" id="btnEn">EN</button>
+    </div>
+  </div>
+
+  <!-- Навигационные табы -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab('studio', this)">
+      <span>🎬</span>
+      <div data-i18n="tab_studio">Обработка</div>
+    </button>
+    <button class="tab-btn" onclick="openTab('download', this)">
+      <span>📥</span>
+      <div data-i18n="tab_download">Скачать</div>
+    </button>
+    <button class="tab-btn" onclick="openTab('checker', this)">
+      <span>🔍</span>
+      <div data-i18n="tab_checker">Чекер</div>
+    </button>
+    <button class="tab-btn" onclick="openTab('ai', this)">
+      <span>🤖</span>
+      <div data-i18n="tab_ai">ИИ & US</div>
+    </button>
+  </div>
+
+  <!-- Вкладка 1: Обработка и Баннер -->
+  <div id="tab-studio" class="tab-content active">
+    <div class="step-box">
+      <div class="step-header">
+        <span class="step-badge" data-i18n="step1">Шаг 1</span>
+        <span class="step-title" data-i18n="choose_platform">Выберите целевую платформу</span>
+      </div>
+      <div class="cards-grid-3" id="studioPlatformCards">
+        <div class="option-card selected" onclick="selectCard('studioPlatform', 'TikTok', this)">
+          <div class="option-icon">🎵</div>
+          <div class="option-title">TikTok</div>
+          <div class="option-desc">9:16 US FYP</div>
+        </div>
+        <div class="option-card" onclick="selectCard('studioPlatform', 'Shorts', this)">
+          <div class="option-icon">📺</div>
+          <div class="option-title">Shorts</div>
+          <div class="option-desc">YouTube US</div>
+        </div>
+        <div class="option-card" onclick="selectCard('studioPlatform', 'Reels', this)">
+          <div class="option-icon">📸</div>
+          <div class="option-title">Reels</div>
+          <div class="option-desc">IG Viral</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-header">
+        <span class="step-badge" data-i18n="step2">Шаг 2</span>
+        <span class="step-title" data-i18n="choose_mode">Режим монтажа / Баннер</span>
+      </div>
+      <div class="cards-grid-2" id="studioModeCards">
+        <div class="option-card selected" onclick="selectCard('studioMode', 'soft', this)">
+          <div class="option-icon">🟢</div>
+          <div class="option-title" data-i18n="m_soft">Мягкая уник.</div>
+          <div class="option-desc" data-i18n="m_soft_d">Чистка метаданных</div>
+        </div>
+        <div class="option-card" onclick="selectCard('studioMode', 'hard', this)">
+          <div class="option-icon">🔴</div>
+          <div class="option-title" data-i18n="m_hard">Жёсткая уник.</div>
+          <div class="option-desc" data-i18n="m_hard_d">Обход неорганики</div>
+        </div>
+        <div class="option-card" onclick="selectCard('studioMode', 'extreme', this)">
+          <div class="option-icon">🟣</div>
+          <div class="option-title" data-i18n="m_ext">Экстрим</div>
+          <div class="option-desc" data-i18n="m_ext_d">Геометрия + питч</div>
+        </div>
+        <div class="option-card" onclick="selectCard('studioMode', 'banner', this)">
+          <div class="option-icon">🏷</div>
+          <div class="option-title" data-i18n="m_ban">Наложить баннер</div>
+          <div class="option-desc" data-i18n="m_ban_d">Брендинг тимы</div>
+        </div>
+        <div class="option-card" onclick="selectCard('studioMode', 'split', this)">
+          <div class="option-icon">🎮</div>
+          <div class="option-title" data-i18n="m_split">Наложить геймплей</div>
+          <div class="option-desc" data-i18n="m_split_d">2 экрана (GTA/Subway)</div>
+        </div>
+        <div class="option-card" onclick="selectCard('studioMode', 'vertical', this)">
+          <div class="option-icon">📐</div>
+          <div class="option-title" data-i18n="m_vert">Формат 9:16</div>
+          <div class="option-desc" data-i18n="m_vert_d">Размытый фон</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="action-btn" onclick="submitStudio()" data-i18n="btn_apply_studio">
+      🚀 Применить и перейти к загрузке файла
+    </button>
+  </div>
+
+  <!-- Вкладка 2: Скачать по ссылке -->
+  <div id="tab-download" class="tab-content">
+    <div class="step-box">
+      <div class="step-header">
+        <span class="step-badge" data-i18n="step1">Шаг 1</span>
+        <span class="step-title" data-i18n="dl_link_title">Ссылка на видео (YouTube / TikTok)</span>
+      </div>
+      <input type="text" id="dlUrl" class="input-field" placeholder="https://www.youtube.com/watch?v=..." />
+      <input type="text" id="dlTimecode" class="input-field" placeholder="Таймкод (необязательно): 01:15-01:50" />
+    </div>
+
+    <div class="step-box">
+      <div class="step-header">
+        <span class="step-badge" data-i18n="step2">Шаг 2</span>
+        <span class="step-title" data-i18n="dl_fmt_title">Качество и формат</span>
+      </div>
+      <div class="cards-grid-2" id="dlFormatCards">
+        <div class="option-card selected" onclick="selectCard('dlFormat', '1080', this)">
+          <div class="option-icon">🎬</div>
+          <div class="option-title">MP4 1080p</div>
+          <div class="option-desc">Full HD</div>
+        </div>
+        <div class="option-card" onclick="selectCard('dlFormat', '720', this)">
+          <div class="option-icon">📹</div>
+          <div class="option-title">MP4 720p</div>
+          <div class="option-desc">HD Fast</div>
+        </div>
+        <div class="option-card" onclick="selectCard('dlFormat', '480', this)">
+          <div class="option-icon">📱</div>
+          <div class="option-title">MP4 480p</div>
+          <div class="option-desc">Лёгкий вес</div>
+        </div>
+        <div class="option-card" onclick="selectCard('dlFormat', 'mp3', this)">
+          <div class="option-icon">🎵</div>
+          <div class="option-title">MP3 Audio</div>
+          <div class="option-desc">Только звук</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="action-btn" onclick="submitDownload()" data-i18n="btn_start_dl">
+      📥 Скачать выбранный ролик в бот
+    </button>
+  </div>
+
+  <!-- Вкладка 3: AI-Чекер -->
+  <div id="tab-checker" class="tab-content">
+    <div class="step-box">
+      <div class="step-header">
+        <span class="step-badge" data-i18n="step1">Шаг 1</span>
+        <span class="step-title" data-i18n="chk_plat_title">Платформа для проверки</span>
+      </div>
+      <div class="cards-grid-2">
+        <div class="option-card selected" onclick="selectCard('chkPlatform', 'tt', this)">
+          <div class="option-icon">🎵</div>
+          <div class="option-title">TikTok Чекер</div>
+          <div class="option-desc">Тень / ГЕО / Trust</div>
+        </div>
+        <div class="option-card" onclick="selectCard('chkPlatform', 'yt', this)">
+          <div class="option-icon">📺</div>
+          <div class="option-title">YouTube Чекер</div>
+          <div class="option-desc">Shorts / Каналы</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-header">
+        <span class="step-badge" data-i18n="step2">Шаг 2</span>
+        <span class="step-title" data-i18n="chk_input_title">Ссылки или @handles (можно списком)</span>
+      </div>
+      <textarea id="chkTargets" class="textarea-field" placeholder="@kurzgesagt&#10;https://www.tiktok.com/@lentakadrov"></textarea>
+      <div class="hint-text" data-i18n="chk_hint">
+        Можно вставить до 20 ссылок или @юзернеймов (каждый с новой строки).
+      </div>
+    </div>
+
+    <button class="action-btn" onclick="submitChecker()" data-i18n="btn_run_chk">
+      🔍 Запустить AI-Проверку на тень
+    </button>
+  </div>
+
+  <!-- Вкладка 4: ИИ и Американский YouTube -->
+  <div id="tab-ai" class="tab-content">
+    <div class="step-box">
+      <div class="step-header">
+        <span class="step-badge">US HOOKS</span>
+        <span class="step-title" data-i18n="ai_pack_title">Готовые хуки или вопрос нейросети</span>
+      </div>
+      <div class="cards-grid-2">
+        <div class="option-card selected" onclick="selectCard('aiTool', 'chat', this)">
+          <div class="option-icon">🤖</div>
+          <div class="option-title">AI Ментор</div>
+          <div class="option-desc">Любой вопрос ИИ</div>
+        </div>
+        <div class="option-card" onclick="selectCard('aiTool', 'hashtags', this)">
+          <div class="option-icon">🏷</div>
+          <div class="option-title">SEO Хэштеги</div>
+          <div class="option-desc">По ключевому слову</div>
+        </div>
+        <div class="option-card" onclick="selectCard('aiTool', 'streamers', this)">
+          <div class="option-icon">🎮</div>
+          <div class="option-title">Хуки: Стримеры</div>
+          <div class="option-desc">Speed / Kai Cenat</div>
+        </div>
+        <div class="option-card" onclick="selectCard('aiTool', 'podcast', this)">
+          <div class="option-icon">🎙</div>
+          <div class="option-title">Хуки: Подкасты</div>
+          <div class="option-desc">Rogan / Theo Von</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-box">
+      <input type="text" id="aiQuery" class="input-field" placeholder="Тема или вопрос (например: Kai Cenat / Как пробить 0 просмотров?)" />
+    </div>
+
+    <button class="action-btn" onclick="submitAI()" data-i18n="btn_ask_ai">
+      ✨ Сгенерировать в Maxudo Bot
+    </button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // Укажи юзернейм своего бота без @ (нужен для резервного перехода, если открыто из инлайн-кнопки)
+    const BOT_USERNAME = "ТВОЙ_БОТ_ЮЗЕРНЕЙМ";
+
+    const state = {
+      lang: 'ru',
+      studioPlatform: 'TikTok',
+      studioMode: 'soft',
+      dlFormat: '1080',
+      chkPlatform: 'tt',
+      aiTool: 'chat'
+    };
+
+    // Отображаем имя пользователя из Telegram
+    const user = tg.initDataUnsafe?.user;
+    if (user && user.first_name) {
+      document.getElementById('userGreeting').innerText = `👤 ${user.first_name}`;
+    }
+
+    const i18n = {
+      ru: {
+        tab_studio: "Обработка",
+        tab_download: "Скачать",
+        tab_checker: "Чекер",
+        tab_ai: "ИИ & US",
+        step1: "Шаг 1",
+        step2: "Шаг 2",
+        choose_platform: "Выберите целевую платформу",
+        choose_mode: "Режим монтажа / Баннер",
+        m_soft: "Мягкая уник.",
+        m_soft_d: "Чистка метаданных",
+        m_hard: "Жёсткая уник.",
+        m_hard_d: "Обход неорганики",
+        m_ext: "Экстрим",
+        m_ext_d: "Геометрия + питч",
+        m_ban: "Наложить баннер",
+        m_ban_d: "Брендинг тимы",
+        m_split: "Наложить геймплей",
+        m_split_d: "2 экрана (GTA/Subway)",
+        m_vert: "Формат 9:16",
+        m_vert_d: "Размытый фон",
+        btn_apply_studio: "🚀 Применить и загрузить видео",
+        dl_link_title: "Ссылка на видео (YouTube / TikTok)",
+        dl_fmt_title: "Качество и формат",
+        btn_start_dl: "📥 Скачать выбранный ролик в бот",
+        chk_plat_title: "Платформа для проверки",
+        chk_input_title: "Ссылки или @handles (можно списком)",
+        chk_hint: "Можно вставить до 20 ссылок или @юзернеймов (каждый с новой строки).",
+        btn_run_chk: "🔍 Запустить AI-Проверку на тень",
+        ai_pack_title: "Готовые хуки или вопрос нейросети",
+        btn_ask_ai: "✨ Сгенерировать в Maxudo Bot"
+      },
+      en: {
+        tab_studio: "Studio",
+        tab_download: "Download",
+        tab_checker: "Checker",
+        tab_ai: "AI & US",
+        step1: "Step 1",
+        step2: "Step 2",
+        choose_platform: "Select Target Platform",
+        choose_mode: "Editing Mode / Banner",
+        m_soft: "Soft Unique",
+        m_soft_d: "Clean metadata",
+        m_hard: "Hard Unique",
+        m_hard_d: "Bypass filters",
+        m_ext: "Extreme",
+        m_ext_d: "Geometry + Pitch",
+        m_ban: "Overlay Banner",
+        m_ban_d: "Team branding",
+        m_split: "Split Gameplay",
+        m_split_d: "2 Screens (GTA)",
+        m_vert: "9:16 Format",
+        m_vert_d: "Blur background",
+        btn_apply_studio: "🚀 Apply & Upload Video",
+        dl_link_title: "Video URL (YouTube / TikTok)",
+        dl_fmt_title: "Quality & Format",
+        btn_start_dl: "📥 Download Video to Bot",
+        chk_plat_title: "Target Platform",
+        chk_input_title: "Links or @handles (batch supported)",
+        chk_hint: "Paste up to 20 links or @handles (one per line).",
+        btn_run_chk: "🔍 Run AI Shadowban Check",
+        ai_pack_title: "US Viral Hooks & AI Mentor",
+        btn_ask_ai: "✨ Generate in Maxudo Bot"
+      }
+    };
+
+    function setLang(lang) {
+      state.lang = lang;
+      document.getElementById('btnRu').classList.toggle('active', lang === 'ru');
+      document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[lang][key]) el.innerText = i18n[lang][key];
+      });
+      if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+    }
+
+    function openTab(tabName, btnEl) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.add('active');
+      btnEl.classList.add('active');
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function selectCard(stateKey, value, cardEl) {
+      state[stateKey] = value;
+      const parent = cardEl.parentElement;
+      parent.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+      cardEl.classList.add('selected');
+      if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+    }
+
+    function sendPayloadToBot(payload) {
+      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      const jsonStr = JSON.stringify(payload);
+      try {
+        // Если открыто через нижнюю кнопку ReplyKeyboardMarkup — мгновенно отправляет через sendData
+        tg.sendData(jsonStr);
+      } catch (e) {
+        // Если открыто из инлайн-кнопки — передаёт через безопасный Deep-Link
+        const b64 = btoa(unescape(encodeURIComponent(jsonStr)))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        if (BOT_USERNAME && BOT_USERNAME !== "ТВОЙ_БОТ_ЮЗЕРНЕЙМ") {
+          tg.openTelegramLink(`https://t.me/${BOT_USERNAME}?start=webapp_${b64}`);
+          tg.close();
+        } else {
+          tg.showAlert("Откройте приложение через нижнюю кнопку «📱 Открыть приложение Maxudo App» возле поля ввода текста!");
+        }
+      }
+    }
+
+    function submitStudio() {
+      sendPayloadToBot({
+        action: "studio_preset",
+        platform: state.studioPlatform,
+        mode: state.studioMode
+      });
+    }
+
+    function submitDownload() {
+      const url = document.getElementById('dlUrl').value.trim();
+      const timecode = document.getElementById('dlTimecode').value.trim();
+      if (!url) {
+        tg.showAlert("Введите ссылку на ролик YouTube или TikTok!");
+        return;
+      }
+      sendPayloadToBot({
+        action: "download",
+        url: url,
+        timecode: timecode,
+        format: state.dlFormat
+      });
+    }
+
+    function submitChecker() {
+      const targets = document.getElementById('chkTargets').value.trim();
+      if (!targets) {
+        tg.showAlert("Укажите хотя бы одну ссылку или @username!");
+        return;
+      }
+      sendPayloadToBot({
+        action: "checker",
+        platform: state.chkPlatform,
+        targets: targets
+      });
+    }
+
+    function submitAI() {
+      const query = document.getElementById('aiQuery').value.trim();
+      if ((state.aiTool === 'chat' || state.aiTool === 'hashtags') && !query) {
+        tg.showAlert("Введите тему или вопрос в текстовое поле!");
+        return;
+      }
+      sendPayloadToBot({
+        action: "ai_tool",
+        tool_type: state.aiTool,
+        query: query
+      });
+    }
+  </script>
+</body>
+</html>
