@@ -35,7 +35,6 @@
       padding: 14px 14px 90px 14px;
     }
 
-    /* Верхняя панель */
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -103,7 +102,6 @@
       box-shadow: 0 0 10px var(--neon-glow);
     }
 
-    /* Навигационные табы */
     .tabs {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -137,7 +135,6 @@
       box-shadow: 0 0 14px rgba(124, 58, 237, 0.3);
     }
 
-    /* Секции и шаги */
     .tab-content {
       display: none;
       animation: fadeIn 0.25s ease;
@@ -183,7 +180,6 @@
       font-weight: 600;
     }
 
-    /* Кликабельные карточки */
     .cards-grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -232,7 +228,6 @@
       margin-top: 3px;
     }
 
-    /* Поля ввода */
     .input-field, .textarea-field {
       width: 100%;
       background: #0b0f19;
@@ -255,7 +250,6 @@
       resize: vertical;
     }
 
-    /* Главная неоновая кнопка действия */
     .action-btn {
       width: 100%;
       background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
@@ -292,7 +286,7 @@
       <div class="brand-logo">🇺🇸</div>
       <div>
         <div class="brand-title">MAXUDO APP</div>
-        <div class="brand-sub" id="userGreeting">Clipper Studio v3.5</div>
+        <div class="brand-sub" id="userGreeting">Clipper Studio v4.0</div>
       </div>
     </div>
     <div class="lang-switch">
@@ -328,7 +322,7 @@
         <span class="step-badge" data-i18n="step1">Шаг 1</span>
         <span class="step-title" data-i18n="choose_platform">Выберите целевую платформу</span>
       </div>
-      <div class="cards-grid-3" id="studioPlatformCards">
+      <div class="cards-grid-3">
         <div class="option-card selected" onclick="selectCard('studioPlatform', 'TikTok', this)">
           <div class="option-icon">🎵</div>
           <div class="option-title">TikTok</div>
@@ -352,7 +346,7 @@
         <span class="step-badge" data-i18n="step2">Шаг 2</span>
         <span class="step-title" data-i18n="choose_mode">Режим монтажа / Баннер</span>
       </div>
-      <div class="cards-grid-2" id="studioModeCards">
+      <div class="cards-grid-2">
         <div class="option-card selected" onclick="selectCard('studioMode', 'soft', this)">
           <div class="option-icon">🟢</div>
           <div class="option-title" data-i18n="m_soft">Мягкая уник.</div>
@@ -407,7 +401,7 @@
         <span class="step-badge" data-i18n="step2">Шаг 2</span>
         <span class="step-title" data-i18n="dl_fmt_title">Качество и формат</span>
       </div>
-      <div class="cards-grid-2" id="dlFormatCards">
+      <div class="cards-grid-2">
         <div class="option-card selected" onclick="selectCard('dlFormat', '1080', this)">
           <div class="option-icon">🎬</div>
           <div class="option-title">MP4 1080p</div>
@@ -460,11 +454,11 @@
     <div class="step-box">
       <div class="step-header">
         <span class="step-badge" data-i18n="step2">Шаг 2</span>
-        <span class="step-title" data-i18n="chk_input_title">Ссылки или @handles (можно списком)</span>
+        <span class="step-title" data-i18n="chk_input_title">Ссылка или @handle канала</span>
       </div>
       <textarea id="chkTargets" class="textarea-field" placeholder="@kurzgesagt&#10;https://www.tiktok.com/@lentakadrov"></textarea>
       <div class="hint-text" data-i18n="chk_hint">
-        Можно вставить до 20 ссылок или @юзернеймов (каждый с новой строки).
+        Укажите @username или ссылку на аккаунт/ролик для мгновенного AI-разбора.
       </div>
     </div>
 
@@ -481,17 +475,7 @@
         <span class="step-title" data-i18n="ai_pack_title">Готовые хуки или вопрос нейросети</span>
       </div>
       <div class="cards-grid-2">
-        <div class="option-card selected" onclick="selectCard('aiTool', 'chat', this)">
-          <div class="option-icon">🤖</div>
-          <div class="option-title">AI Ментор</div>
-          <div class="option-desc">Любой вопрос ИИ</div>
-        </div>
-        <div class="option-card" onclick="selectCard('aiTool', 'hashtags', this)">
-          <div class="option-icon">🏷</div>
-          <div class="option-title">SEO Хэштеги</div>
-          <div class="option-desc">По ключевому слову</div>
-        </div>
-        <div class="option-card" onclick="selectCard('aiTool', 'streamers', this)">
+        <div class="option-card selected" onclick="selectCard('aiTool', 'streamers', this)">
           <div class="option-icon">🎮</div>
           <div class="option-title">Хуки: Стримеры</div>
           <div class="option-desc">Speed / Kai Cenat</div>
@@ -501,11 +485,31 @@
           <div class="option-title">Хуки: Подкасты</div>
           <div class="option-desc">Rogan / Theo Von</div>
         </div>
+        <div class="option-card" onclick="selectCard('aiTool', 'crime', this)">
+          <div class="option-icon">🚓</div>
+          <div class="option-title">Бодикамеры США</div>
+          <div class="option-desc">Police / Суды</div>
+        </div>
+        <div class="option-card" onclick="selectCard('aiTool', 'hashtags', this)">
+          <div class="option-icon">🏷</div>
+          <div class="option-title">SEO Хэштеги</div>
+          <div class="option-desc">По ключевому слову</div>
+        </div>
+        <div class="option-card" onclick="selectCard('aiTool', 'chat', this)">
+          <div class="option-icon">🤖</div>
+          <div class="option-title">AI Ментор</div>
+          <div class="option-desc">Вопрос нейросети</div>
+        </div>
+        <div class="option-card" onclick="selectCard('aiTool', 'money', this)">
+          <div class="option-icon">💸</div>
+          <div class="option-title">Хуки: Бизнес</div>
+          <div class="option-desc">Деньги / Успех</div>
+        </div>
       </div>
     </div>
 
     <div class="step-box">
-      <input type="text" id="aiQuery" class="input-field" placeholder="Тема или вопрос (например: Kai Cenat / Как пробить 0 просмотров?)" />
+      <input type="text" id="aiQuery" class="input-field" placeholder="Ключевое слово (для тегов/ИИ): Kai Cenat, GTA 5..." />
     </div>
 
     <button class="action-btn" onclick="submitAI()" data-i18n="btn_ask_ai">
@@ -518,8 +522,13 @@
     tg.ready();
     tg.expand();
 
-    // Укажи юзернейм своего бота без @ (нужен для резервного перехода, если открыто из инлайн-кнопки)
-    const BOT_USERNAME = "ТВОЙ_БОТ_ЮЗЕРНЕЙМ";
+    // Получаем юзернейм бота автоматически из URL (?bot=...), который передаёт bot.py
+    const urlParams = new URLSearchParams(window.location.search);
+    const BOT_USERNAME = urlParams.get('bot') || "";
+
+    // Проверяем режим запуска: если tg.initData пустой — открыто с нижней кнопки (sendData работает напрямую)
+    // Если tg.initData НЕ пустой — открыто с инлайн-кнопки под сообщением или кнопки меню
+    const IS_REPLY_KB_MODE = (!tg.initData || tg.initData.length === 0);
 
     const state = {
       lang: 'ru',
@@ -527,10 +536,9 @@
       studioMode: 'soft',
       dlFormat: '1080',
       chkPlatform: 'tt',
-      aiTool: 'chat'
+      aiTool: 'streamers'
     };
 
-    // Отображаем имя пользователя из Telegram
     const user = tg.initDataUnsafe?.user;
     if (user && user.first_name) {
       document.getElementById('userGreeting').innerText = `👤 ${user.first_name}`;
@@ -563,8 +571,8 @@
         dl_fmt_title: "Качество и формат",
         btn_start_dl: "📥 Скачать выбранный ролик в бот",
         chk_plat_title: "Платформа для проверки",
-        chk_input_title: "Ссылки или @handles (можно списком)",
-        chk_hint: "Можно вставить до 20 ссылок или @юзернеймов (каждый с новой строки).",
+        chk_input_title: "Ссылка или @handle канала",
+        chk_hint: "Укажите @username или ссылку на аккаунт/ролик для мгновенного AI-разбора.",
         btn_run_chk: "🔍 Запустить AI-Проверку на тень",
         ai_pack_title: "Готовые хуки или вопрос нейросети",
         btn_ask_ai: "✨ Сгенерировать в Maxudo Bot"
@@ -595,8 +603,8 @@
         dl_fmt_title: "Quality & Format",
         btn_start_dl: "📥 Download Video to Bot",
         chk_plat_title: "Target Platform",
-        chk_input_title: "Links or @handles (batch supported)",
-        chk_hint: "Paste up to 20 links or @handles (one per line).",
+        chk_input_title: "Link or @handle",
+        chk_hint: "Enter @username or video URL for instant AI shadowban analysis.",
         btn_run_chk: "🔍 Run AI Shadowban Check",
         ai_pack_title: "US Viral Hooks & AI Mentor",
         btn_ask_ai: "✨ Generate in Maxudo Bot"
@@ -630,31 +638,31 @@
       if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
     }
 
-    function sendPayloadToBot(payload) {
+    // Универсальная отправка команды в бота (работает и из Инлайн-кнопки, и из Меню, и из Нижней клавиатуры)
+    function dispatchAction(fullPayload, compactCode) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-      const jsonStr = JSON.stringify(payload);
-      try {
-        // Если открыто через нижнюю кнопку ReplyKeyboardMarkup — мгновенно отправляет через sendData
-        tg.sendData(jsonStr);
-      } catch (e) {
-        // Если открыто из инлайн-кнопки — передаёт через безопасный Deep-Link
-        const b64 = btoa(unescape(encodeURIComponent(jsonStr)))
-          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        if (BOT_USERNAME && BOT_USERNAME !== "ТВОЙ_БОТ_ЮЗЕРНЕЙМ") {
-          tg.openTelegramLink(`https://t.me/${BOT_USERNAME}?start=webapp_${b64}`);
-          tg.close();
-        } else {
-          tg.showAlert("Откройте приложение через нижнюю кнопку «📱 Открыть приложение Maxudo App» возле поля ввода текста!");
-        }
+
+      if (IS_REPLY_KB_MODE) {
+        tg.sendData(JSON.stringify(fullPayload));
+        return;
+      }
+
+      if (BOT_USERNAME) {
+        const safeCode = compactCode.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 62);
+        tg.openTelegramLink(`https://t.me/${BOT_USERNAME}?start=${safeCode}`);
+        setTimeout(() => tg.close(), 150);
+      } else {
+        tg.showAlert("Нажмите /start в боте, чтобы обновить кнопку запуска Mini App!");
       }
     }
 
     function submitStudio() {
-      sendPayloadToBot({
+      const code = `wa_s_${state.studioPlatform}_${state.studioMode}`;
+      dispatchAction({
         action: "studio_preset",
         platform: state.studioPlatform,
         mode: state.studioMode
-      });
+      }, code);
     }
 
     function submitDownload() {
@@ -664,38 +672,73 @@
         tg.showAlert("Введите ссылку на ролик YouTube или TikTok!");
         return;
       }
-      sendPayloadToBot({
+
+      // Извлекаем короткий ID ролика для совместимости с 64-символьным лимитом Deep-Link
+      let code = `wa_dl_${state.dlFormat}`;
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      const ttVidMatch = url.match(/\/video\/(\d{15,22})/);
+      const ttShortMatch = url.match(/(?:vm|vt)\.tiktok\.com\/([a-zA-Z0-9_-]+)/);
+
+      if (ytMatch) {
+        code = `wa_dy_${state.dlFormat}_${ytMatch[1]}`;
+      } else if (ttVidMatch) {
+        code = `wa_dv_${state.dlFormat}_${ttVidMatch[1]}`;
+      } else if (ttShortMatch) {
+        code = `wa_dt_${state.dlFormat}_${ttShortMatch[1]}`;
+      }
+
+      dispatchAction({
         action: "download",
         url: url,
         timecode: timecode,
         format: state.dlFormat
-      });
+      }, code);
     }
 
     function submitChecker() {
       const targets = document.getElementById('chkTargets').value.trim();
       if (!targets) {
-        tg.showAlert("Укажите хотя бы одну ссылку или @username!");
+        tg.showAlert("Укажите ссылку или @username!");
         return;
       }
-      sendPayloadToBot({
+
+      const firstLine = targets.split(/\r?\n/)[0].trim();
+      let cleanTarget = firstLine.replace(/^https?:\/\/(www\.)?(youtube\.com|tiktok\.com)\//i, '')
+                                 .replace(/^channel\//i, '')
+                                 .replace(/^@/, '')
+                                 .split('/')[0]
+                                 .split('?')[0]
+                                 .replace(/[^a-zA-Z0-9_-]/g, '');
+
+      const code = `wa_c_${state.chkPlatform}_${cleanTarget || 'user'}`;
+      dispatchAction({
         action: "checker",
         platform: state.chkPlatform,
         targets: targets
-      });
+      }, code);
     }
 
     function submitAI() {
       const query = document.getElementById('aiQuery').value.trim();
-      if ((state.aiTool === 'chat' || state.aiTool === 'hashtags') && !query) {
-        tg.showAlert("Введите тему или вопрос в текстовое поле!");
+      if (state.aiTool === 'hashtags' && !query) {
+        tg.showAlert("Введите ключевое слово для генерации тегов!");
         return;
       }
-      sendPayloadToBot({
+
+      let code = `wa_h_${state.aiTool}`;
+      if (state.aiTool === 'hashtags') {
+        const kw = query.replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || 'viral';
+        code = `wa_tag_${kw}`;
+      } else if (state.aiTool === 'chat') {
+        const kw = query.replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || 'advice';
+        code = `wa_ai_${kw}`;
+      }
+
+      dispatchAction({
         action: "ai_tool",
         tool_type: state.aiTool,
         query: query
-      });
+      }, code);
     }
   </script>
 </body>
