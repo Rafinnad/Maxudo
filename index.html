@@ -3,611 +3,196 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Maxudo Team Mini App</title>
+  <meta name="theme-color" content="#090d16" />
+  <title>WestCut — Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg-main: #090d16;
-      --bg-card: #121826;
-      --bg-card-hover: #1a2235;
-      --border-color: rgba(255, 255, 255, 0.08);
-      --neon-primary: #7c3aed;
-      --neon-secondary: #06b6d4;
-      --neon-glow: rgba(124, 58, 237, 0.45);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --radius-lg: 18px;
-      --radius-md: 14px;
+      color-scheme: dark;
+      --bg: #080c15;
+      --card: #111827;
+      --card2: #0d1422;
+      --border: rgba(255,255,255,.085);
+      --purple: #8b5cf6;
+      --cyan: #06b6d4;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --radius: 17px;
+      --glow: rgba(139,92,246,.25);
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background: radial-gradient(circle at top right, #1e1b4b 0%, var(--bg-main) 45%);
-      color: var(--text-main);
-      min-height: 100vh;
-      padding: 14px 14px 90px 14px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(18, 24, 38, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
-      padding: 12px 16px;
-      border-radius: var(--radius-lg);
-      margin-bottom: 16px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-logo {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 0 15px var(--neon-glow);
-    }
-
-    .brand-title {
-      font-weight: 700;
-      font-size: 16px;
-      letter-spacing: 0.3px;
-    }
-
-    .brand-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .lang-switch {
-      display: flex;
-      background: #0b0f19;
-      border-radius: 10px;
-      padding: 3px;
-      border: 1px solid var(--border-color);
-    }
-
-    .lang-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .lang-btn.active {
-      background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
-      color: #fff;
-      box-shadow: 0 0 10px var(--neon-glow);
-    }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-
-    .tab-btn {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-muted);
-      padding: 10px 6px;
-      border-radius: var(--radius-md);
-      font-size: 12px;
-      font-weight: 600;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .tab-btn span {
-      display: block;
-      font-size: 18px;
-      margin-bottom: 4px;
-    }
-
-    .tab-btn.active {
-      background: rgba(124, 58, 237, 0.16);
-      border-color: var(--neon-primary);
-      color: #fff;
-      box-shadow: 0 0 14px rgba(124, 58, 237, 0.3);
-    }
-
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.25s ease;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .step-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 16px;
-      margin-bottom: 14px;
-    }
-
-    .step-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .step-badge {
-      background: rgba(6, 182, 212, 0.15);
-      color: #22d3ee;
-      border: 1px solid rgba(6, 182, 212, 0.4);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
-      text-transform: uppercase;
-    }
-
-    .step-title {
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .cards-grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .cards-grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-
-    .option-card {
-      background: #0d1320;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 12px 8px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .option-card:hover {
-      background: var(--bg-card-hover);
-    }
-
-    .option-card.selected {
-      background: rgba(124, 58, 237, 0.18);
-      border-color: var(--neon-primary);
-      box-shadow: 0 0 12px var(--neon-glow);
-    }
-
-    .option-icon {
-      font-size: 22px;
-      margin-bottom: 6px;
-    }
-
-    .option-title {
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .option-desc {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 3px;
-    }
-
-    .input-field, .textarea-field {
-      width: 100%;
-      background: #0b0f19;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      color: #fff;
-      padding: 12px 14px;
-      font-size: 14px;
-      outline: none;
-      margin-bottom: 10px;
-      transition: border 0.2s;
-    }
-
-    .input-field:focus, .textarea-field:focus {
-      border-color: var(--neon-secondary);
-    }
-
-    .textarea-field {
-      min-height: 90px;
-      resize: vertical;
-    }
-
-    .action-btn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
-      border: none;
-      border-radius: var(--radius-md);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 15px;
-      cursor: pointer;
-      box-shadow: 0 4px 20px var(--neon-glow);
-      transition: transform 0.15s ease, opacity 0.15s ease;
-      margin-top: 6px;
-    }
-
-    .action-btn:active {
-      transform: scale(0.98);
-      opacity: 0.9;
-    }
-
-    .hint-text {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.4;
-      margin-top: 8px;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { min-height: 100vh; padding: 12px 12px 28px; color: var(--text); background: radial-gradient(ellipse at 95% 0%,#25205a 0%,transparent 38%),radial-gradient(ellipse at 0% 45%,#102b3b 0%,transparent 32%),var(--bg); }
+    button,input,textarea { font: inherit; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 14px; margin-bottom:14px; border:1px solid var(--border); border-radius:var(--radius); background:rgba(17,24,39,.88); backdrop-filter:blur(14px); }
+    .brand { display:flex; align-items:center; gap:10px; min-width:0; }
+    .logo { display:grid; place-items:center; width:39px; height:39px; flex:none; border-radius:12px; font-size:19px; font-weight:900; background:linear-gradient(135deg,var(--purple),var(--cyan)); box-shadow:0 0 18px var(--glow); }
+    .brand-title { font-size:16px; font-weight:850; letter-spacing:.8px; }
+    .brand-sub { color:var(--muted); font-size:10px; margin-top:2px; }
+    .lang { display:flex; padding:3px; border:1px solid var(--border); border-radius:10px; background:#090e18; }
+    .lang button { border:0; color:var(--muted); background:transparent; padding:6px 9px; border-radius:7px; font-size:11px; font-weight:800; }
+    .lang button.active { color:white; background:linear-gradient(135deg,var(--purple),var(--cyan)); }
+    .welcome { margin:4px 2px 14px; }
+    .welcome h1 { font-size:21px; font-weight:850; letter-spacing:-.4px; }
+    .welcome p { color:var(--muted); font-size:12px; line-height:1.45; margin-top:4px; }
+    .tabs { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin-bottom:14px; }
+    .tab-btn { min-width:0; padding:9px 3px 8px; border:1px solid var(--border); border-radius:13px; background:rgba(17,24,39,.9); color:var(--muted); font-size:10px; font-weight:750; }
+    .tab-btn .ico { display:block; font-size:18px; margin-bottom:4px; }
+    .tab-btn.active { color:#fff; border-color:rgba(139,92,246,.8); background:rgba(139,92,246,.17); box-shadow:0 0 14px var(--glow); }
+    .panel { display:none; animation:appear .2s ease; }
+    .panel.active { display:block; }
+    @keyframes appear { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+    .section { padding:15px; margin-bottom:12px; border:1px solid var(--border); border-radius:var(--radius); background:linear-gradient(145deg,rgba(17,24,39,.97),rgba(13,20,34,.97)); }
+    .section-head { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+    .step { padding:4px 8px; border:1px solid rgba(6,182,212,.3); border-radius:7px; color:#67e8f9; background:rgba(6,182,212,.1); font-size:9px; font-weight:850; text-transform:uppercase; white-space:nowrap; }
+    .section-title { font-size:13px; font-weight:750; line-height:1.3; }
+    .grid2,.grid3 { display:grid; gap:8px; }
+    .grid2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .grid3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .option { min-width:0; padding:12px 7px; text-align:center; border:1px solid var(--border); border-radius:13px; background:var(--card2); color:var(--text); cursor:pointer; transition:.16s; }
+    .option:active { transform:scale(.98); }
+    .option.selected { border-color:var(--purple); background:rgba(139,92,246,.16); box-shadow:0 0 12px var(--glow); }
+    .option .emoji { font-size:21px; margin-bottom:6px; }
+    .option .name { font-size:11px; font-weight:800; line-height:1.25; }
+    .option .desc { margin-top:4px; color:var(--muted); font-size:9px; line-height:1.3; }
+    .field { width:100%; padding:12px 13px; margin-bottom:9px; border:1px solid var(--border); border-radius:12px; outline:none; color:#fff; background:#090f1b; font-size:13px; }
+    .field:focus { border-color:var(--cyan); }
+    textarea.field { min-height:108px; resize:vertical; line-height:1.45; }
+    .hint { color:var(--muted); font-size:11px; line-height:1.45; margin-top:1px; }
+    .primary { width:100%; padding:14px 13px; border:0; border-radius:13px; color:white; background:linear-gradient(110deg,var(--purple),#5b5ce2,var(--cyan)); box-shadow:0 5px 20px var(--glow); font-size:13px; font-weight:850; cursor:pointer; }
+    .primary:active { transform:scale(.985); opacity:.92; }
+    .note { padding:11px 12px; border:1px solid rgba(6,182,212,.2); border-radius:12px; color:#b6c5d7; background:rgba(6,182,212,.06); font-size:11px; line-height:1.5; }
+    .note b { color:#e0f2fe; }
+    .footer { text-align:center; color:#64748b; font-size:10px; padding:17px 0 5px; }
+    @media (max-width:360px) { .tabs { gap:4px; } .tab-btn { font-size:9px; } .tab-btn .ico { font-size:16px; } .grid3 { gap:6px; } .option .name { font-size:10px; } }
   </style>
 </head>
 <body>
-
-  <!-- Верхняя панель -->
-  <div class="topbar">
+  <header class="topbar">
     <div class="brand">
-      <div class="brand-logo">🇺🇸</div>
-      <div>
-        <div class="brand-title">MAXUDO APP</div>
-        <div class="brand-sub" id="userGreeting">Clipper Studio v4.0</div>
-      </div>
+      <div class="logo">W</div>
+      <div><div class="brand-title">WESTCUT</div><div class="brand-sub" id="userGreeting">VIDEO WORKSPACE</div></div>
     </div>
-    <div class="lang-switch">
-      <button class="lang-btn active" onclick="setLang('ru')" id="btnRu">RU</button>
-      <button class="lang-btn" onclick="setLang('en')" id="btnEn">EN</button>
-    </div>
-  </div>
+    <div class="lang"><button id="btnRu" class="active" onclick="setLang('ru')">RU</button><button id="btnEn" onclick="setLang('en')">EN</button></div>
+  </header>
 
-  <!-- Навигационные табы -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="openTab('studio', this)">
-      <span>🎬</span>
-      <div data-i18n="tab_studio">Обработка</div>
-    </button>
-    <button class="tab-btn" onclick="openTab('download', this)">
-      <span>📥</span>
-      <div data-i18n="tab_download">Скачать</div>
-    </button>
-    <button class="tab-btn" onclick="openTab('checker', this)">
-      <span>🔍</span>
-      <div data-i18n="tab_checker">Чекер</div>
-    </button>
-    <button class="tab-btn" onclick="openTab('ai', this)">
-      <span>🤖</span>
-      <div data-i18n="tab_ai">ИИ & US</div>
-    </button>
-  </div>
+  <div class="welcome"><h1 data-i18n="welcome">Твоя видеостудия</h1><p data-i18n="welcome_sub">Монтаж, нарезка, загрузка и инструменты для контента — в одном месте.</p></div>
 
-  <!-- Вкладка 1: Обработка и Баннер -->
-  <div id="tab-studio" class="tab-content active">
-    <div class="step-box">
-      <div class="step-header">
-        <span class="step-badge" data-i18n="step1">Шаг 1</span>
-        <span class="step-title" data-i18n="choose_platform">Выберите целевую платформу</span>
-      </div>
-      <div class="cards-grid-3">
-        <div class="option-card selected" onclick="selectCard('studioPlatform', 'TikTok', this)">
-          <div class="option-icon">🎵</div>
-          <div class="option-title">TikTok</div>
-          <div class="option-desc">9:16 US FYP</div>
-        </div>
-        <div class="option-card" onclick="selectCard('studioPlatform', 'Shorts', this)">
-          <div class="option-icon">📺</div>
-          <div class="option-title">Shorts</div>
-          <div class="option-desc">YouTube US</div>
-        </div>
-        <div class="option-card" onclick="selectCard('studioPlatform', 'Reels', this)">
-          <div class="option-icon">📸</div>
-          <div class="option-title">Reels</div>
-          <div class="option-desc">IG Viral</div>
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="openTab('studio',this)"><span class="ico">🎬</span><span data-i18n="tab_studio">Студия</span></button>
+    <button class="tab-btn" onclick="openTab('download',this)"><span class="ico">📥</span><span data-i18n="tab_download">Загрузчик</span></button>
+    <button class="tab-btn" onclick="openTab('clips',this)"><span class="ico">✂️</span><span data-i18n="tab_clips">Нарезка</span></button>
+    <button class="tab-btn" onclick="openTab('checker',this)"><span class="ico">🔎</span><span data-i18n="tab_checker">Чекер</span></button>
+    <button class="tab-btn" onclick="openTab('ai',this)"><span class="ico">🤖</span><span data-i18n="tab_ai">AI</span></button>
+  </nav>
+
+  <main>
+    <section id="panel-studio" class="panel active">
+      <div class="section">
+        <div class="section-head"><span class="step" data-i18n="step1">ШАГ 1</span><span class="section-title" data-i18n="platform_title">Куда готовим видео?</span></div>
+        <div class="grid3" id="platformCards">
+          <button class="option selected" onclick="selectCard('platform','TikTok',this)"><div class="emoji">🎵</div><div class="name">TikTok</div><div class="desc">Vertical video</div></button>
+          <button class="option" onclick="selectCard('platform','Shorts',this)"><div class="emoji">▶️</div><div class="name">YouTube Shorts</div><div class="desc">9:16</div></button>
+          <button class="option" onclick="selectCard('platform','Reels',this)"><div class="emoji">📸</div><div class="name">Instagram Reels</div><div class="desc">9:16</div></button>
         </div>
       </div>
-    </div>
-
-    <div class="step-box">
-      <div class="step-header">
-        <span class="step-badge" data-i18n="step2">Шаг 2</span>
-        <span class="step-title" data-i18n="choose_mode">Режим монтажа / Баннер</span>
-      </div>
-      <div class="cards-grid-2">
-        <div class="option-card selected" onclick="selectCard('studioMode', 'soft', this)">
-          <div class="option-icon">🟢</div>
-          <div class="option-title" data-i18n="m_soft">Мягкая уник.</div>
-          <div class="option-desc" data-i18n="m_soft_d">Чистка метаданных</div>
-        </div>
-        <div class="option-card" onclick="selectCard('studioMode', 'hard', this)">
-          <div class="option-icon">🔴</div>
-          <div class="option-title" data-i18n="m_hard">Жёсткая уник.</div>
-          <div class="option-desc" data-i18n="m_hard_d">Обход неорганики</div>
-        </div>
-        <div class="option-card" onclick="selectCard('studioMode', 'extreme', this)">
-          <div class="option-icon">🟣</div>
-          <div class="option-title" data-i18n="m_ext">Экстрим</div>
-          <div class="option-desc" data-i18n="m_ext_d">Геометрия + питч</div>
-        </div>
-        <div class="option-card" onclick="selectCard('studioMode', 'banner', this)">
-          <div class="option-icon">🏷</div>
-          <div class="option-title" data-i18n="m_ban">Наложить баннер</div>
-          <div class="option-desc" data-i18n="m_ban_d">Брендинг тимы</div>
-        </div>
-        <div class="option-card" onclick="selectCard('studioMode', 'split', this)">
-          <div class="option-icon">🎮</div>
-          <div class="option-title" data-i18n="m_split">Наложить геймплей</div>
-          <div class="option-desc" data-i18n="m_split_d">2 экрана (GTA/Subway)</div>
-        </div>
-        <div class="option-card" onclick="selectCard('studioMode', 'vertical', this)">
-          <div class="option-icon">📐</div>
-          <div class="option-title" data-i18n="m_vert">Формат 9:16</div>
-          <div class="option-desc" data-i18n="m_vert_d">Размытый фон</div>
+      <div class="section">
+        <div class="section-head"><span class="step" data-i18n="step2">ШАГ 2</span><span class="section-title" data-i18n="mode_title">Выбери обработку</span></div>
+        <div class="grid2" id="modeCards">
+          <button class="option selected" onclick="selectCard('mode','soft',this)"><div class="emoji">🟢</div><div class="name" data-i18n="soft">Мягкая обработка</div><div class="desc" data-i18n="soft_d">Очистка метаданных</div></button>
+          <button class="option" onclick="selectCard('mode','hard',this)"><div class="emoji">🔴</div><div class="name" data-i18n="hard">Расширенная обработка</div><div class="desc" data-i18n="hard_d">Больше изменений видео</div></button>
+          <button class="option" onclick="selectCard('mode','extreme',this)"><div class="emoji">🟣</div><div class="name" data-i18n="extreme">Экстрим</div><div class="desc" data-i18n="extreme_d">Геометрия и аудио</div></button>
+          <button class="option" onclick="selectCard('mode','banner',this)"><div class="emoji">🏷️</div><div class="name" data-i18n="banner">Добавить баннер</div><div class="desc" data-i18n="banner_d">Брендинг поверх видео</div></button>
+          <button class="option" onclick="selectCard('mode','split',this)"><div class="emoji">🎮</div><div class="name" data-i18n="split">Split-screen</div><div class="desc" data-i18n="split_d">Видео + геймплей</div></button>
+          <button class="option" onclick="selectCard('mode','vertical',this)"><div class="emoji">📱</div><div class="name" data-i18n="vertical">Формат 9:16</div><div class="desc" data-i18n="vertical_d">Вертикальный кадр</div></button>
         </div>
       </div>
-    </div>
+      <button class="primary" onclick="submitStudio()" data-i18n="studio_btn">🚀 Применить настройки</button>
+      <p class="hint" data-i18n="studio_hint">После отправки бот подтвердит настройки. Затем пришли видео в чат Telegram файлом.</p>
+    </section>
 
-    <button class="action-btn" onclick="submitStudio()" data-i18n="btn_apply_studio">
-      🚀 Применить и перейти к загрузке файла
-    </button>
-  </div>
-
-  <!-- Вкладка 2: Скачать по ссылке -->
-  <div id="tab-download" class="tab-content">
-    <div class="step-box">
-      <div class="step-header">
-        <span class="step-badge" data-i18n="step1">Шаг 1</span>
-        <span class="step-title" data-i18n="dl_link_title">Ссылка на видео (YouTube / TikTok)</span>
+    <section id="panel-download" class="panel">
+      <div class="section">
+        <div class="section-head"><span class="step" data-i18n="step1">ШАГ 1</span><span class="section-title" data-i18n="link_title">Ссылка на исходное видео</span></div>
+        <input id="dlUrl" class="field" type="url" placeholder="https://youtube.com/... или https://tiktok.com/..." autocomplete="url" />
+        <input id="dlTimecode" class="field" type="text" placeholder="Таймкод (необязательно): 01:15-01:50" />
+        <p class="hint" data-i18n="download_hint">Поддерживаются ссылки на YouTube, Shorts и TikTok. Можно скачать весь ролик или фрагмент по таймкоду.</p>
       </div>
-      <input type="text" id="dlUrl" class="input-field" placeholder="https://www.youtube.com/watch?v=..." />
-      <input type="text" id="dlTimecode" class="input-field" placeholder="Таймкод (необязательно): 01:15-01:50" />
-    </div>
-
-    <div class="step-box">
-      <div class="step-header">
-        <span class="step-badge" data-i18n="step2">Шаг 2</span>
-        <span class="step-title" data-i18n="dl_fmt_title">Качество и формат</span>
-      </div>
-      <div class="cards-grid-2">
-        <div class="option-card selected" onclick="selectCard('dlFormat', '1080', this)">
-          <div class="option-icon">🎬</div>
-          <div class="option-title">MP4 1080p</div>
-          <div class="option-desc">Full HD</div>
-        </div>
-        <div class="option-card" onclick="selectCard('dlFormat', '720', this)">
-          <div class="option-icon">📹</div>
-          <div class="option-title">MP4 720p</div>
-          <div class="option-desc">HD Fast</div>
-        </div>
-        <div class="option-card" onclick="selectCard('dlFormat', '480', this)">
-          <div class="option-icon">📱</div>
-          <div class="option-title">MP4 480p</div>
-          <div class="option-desc">Лёгкий вес</div>
-        </div>
-        <div class="option-card" onclick="selectCard('dlFormat', 'mp3', this)">
-          <div class="option-icon">🎵</div>
-          <div class="option-title">MP3 Audio</div>
-          <div class="option-desc">Только звук</div>
+      <div class="section">
+        <div class="section-head"><span class="step" data-i18n="step2">ШАГ 2</span><span class="section-title" data-i18n="quality_title">Предпочитаемое качество</span></div>
+        <div class="grid2" id="formatCards">
+          <button class="option selected" onclick="selectCard('format','1080',this)"><div class="emoji">🎬</div><div class="name">MP4 1080p</div><div class="desc">Full HD</div></button>
+          <button class="option" onclick="selectCard('format','720',this)"><div class="emoji">📹</div><div class="name">MP4 720p</div><div class="desc">HD</div></button>
+          <button class="option" onclick="selectCard('format','480',this)"><div class="emoji">📱</div><div class="name">MP4 480p</div><div class="desc" data-i18n="small_file">Меньше размер</div></button>
+          <button class="option" onclick="selectCard('format','mp3',this)"><div class="emoji">🎧</div><div class="name">MP3</div><div class="desc" data-i18n="audio_only">Только аудио</div></button>
         </div>
       </div>
-    </div>
+      <button class="primary" onclick="submitDownload()" data-i18n="download_btn">📥 Передать запрос боту</button>
+      <p class="hint" data-i18n="download_after">Бот пришлёт кнопки для запуска скачивания выбранного ролика.</p>
+    </section>
 
-    <button class="action-btn" onclick="submitDownload()" data-i18n="btn_start_dl">
-      📥 Скачать выбранный ролик в бот
-    </button>
-  </div>
-
-  <!-- Вкладка 3: AI-Чекер -->
-  <div id="tab-checker" class="tab-content">
-    <div class="step-box">
-      <div class="step-header">
-        <span class="step-badge" data-i18n="step1">Шаг 1</span>
-        <span class="step-title" data-i18n="chk_plat_title">Платформа для проверки</span>
+    <section id="panel-clips" class="panel">
+      <div class="section">
+        <div class="section-head"><span class="step" data-i18n="step1">ШАГ 1</span><span class="section-title" data-i18n="clips_title">Найти топ-моменты</span></div>
+        <input id="clipsUrl" class="field" type="url" placeholder="Вставь ссылку на видео YouTube / TikTok" />
+        <p class="hint" data-i18n="clips_hint">WestCut передаст ссылку в модуль нарезки. Количество и длительность клипов можно будет настроить в боте.</p>
       </div>
-      <div class="cards-grid-2">
-        <div class="option-card selected" onclick="selectCard('chkPlatform', 'tt', this)">
-          <div class="option-icon">🎵</div>
-          <div class="option-title">TikTok Чекер</div>
-          <div class="option-desc">Тень / ГЕО / Trust</div>
-        </div>
-        <div class="option-card" onclick="selectCard('chkPlatform', 'yt', this)">
-          <div class="option-icon">📺</div>
-          <div class="option-title">YouTube Чекер</div>
-          <div class="option-desc">Shorts / Каналы</div>
+      <div class="note" data-i18n="clips_note"><b>Как это работает:</b> отправь ссылку — бот откроет панель нарезки, где можно выбрать параметры и запустить поиск ярких моментов.</div>
+      <button class="primary" style="margin-top:12px" onclick="submitClips()" data-i18n="clips_btn">✂️ Перейти к настройкам нарезки</button>
+    </section>
+
+    <section id="panel-checker" class="panel">
+      <div class="section">
+        <div class="section-head"><span class="step" data-i18n="step1">ШАГ 1</span><span class="section-title" data-i18n="checker_platform">Что анализируем?</span></div>
+        <div class="grid2" id="checkerPlatformCards">
+          <button class="option selected" onclick="selectCard('checkerPlatform','tt',this)"><div class="emoji">🎵</div><div class="name">TikTok</div><div class="desc" data-i18n="tt_check">Аккаунт или видео</div></button>
+          <button class="option" onclick="selectCard('checkerPlatform','yt',this)"><div class="emoji">▶️</div><div class="name">YouTube</div><div class="desc" data-i18n="yt_check">Канал, Shorts или видео</div></button>
         </div>
       </div>
-    </div>
-
-    <div class="step-box">
-      <div class="step-header">
-        <span class="step-badge" data-i18n="step2">Шаг 2</span>
-        <span class="step-title" data-i18n="chk_input_title">Ссылка или @handle канала</span>
+      <div class="section">
+        <div class="section-head"><span class="step" data-i18n="step2">ШАГ 2</span><span class="section-title" data-i18n="targets_title">Ссылки или @username</span></div>
+        <textarea id="checkerTargets" class="field" placeholder="@username&#10;https://www.youtube.com/@channel"></textarea>
+        <p class="hint" data-i18n="checker_hint">До 20 ссылок или имён пользователей, каждое с новой строки. Также можно отправить .txt файл прямо в чат.</p>
       </div>
-      <textarea id="chkTargets" class="textarea-field" placeholder="@kurzgesagt&#10;https://www.tiktok.com/@lentakadrov"></textarea>
-      <div class="hint-text" data-i18n="chk_hint">
-        Укажите @username или ссылку на аккаунт/ролик для мгновенного AI-разбора.
-      </div>
-    </div>
+      <button class="primary" onclick="submitChecker()" data-i18n="checker_btn">🔎 Запустить анализ</button>
+    </section>
 
-    <button class="action-btn" onclick="submitChecker()" data-i18n="btn_run_chk">
-      🔍 Запустить AI-Проверку на тень
-    </button>
-  </div>
-
-  <!-- Вкладка 4: ИИ и Американский YouTube -->
-  <div id="tab-ai" class="tab-content">
-    <div class="step-box">
-      <div class="step-header">
-        <span class="step-badge">US HOOKS</span>
-        <span class="step-title" data-i18n="ai_pack_title">Готовые хуки или вопрос нейросети</span>
-      </div>
-      <div class="cards-grid-2">
-        <div class="option-card selected" onclick="selectCard('aiTool', 'streamers', this)">
-          <div class="option-icon">🎮</div>
-          <div class="option-title">Хуки: Стримеры</div>
-          <div class="option-desc">Speed / Kai Cenat</div>
-        </div>
-        <div class="option-card" onclick="selectCard('aiTool', 'podcast', this)">
-          <div class="option-icon">🎙</div>
-          <div class="option-title">Хуки: Подкасты</div>
-          <div class="option-desc">Rogan / Theo Von</div>
-        </div>
-        <div class="option-card" onclick="selectCard('aiTool', 'crime', this)">
-          <div class="option-icon">🚓</div>
-          <div class="option-title">Бодикамеры США</div>
-          <div class="option-desc">Police / Суды</div>
-        </div>
-        <div class="option-card" onclick="selectCard('aiTool', 'hashtags', this)">
-          <div class="option-icon">🏷</div>
-          <div class="option-title">SEO Хэштеги</div>
-          <div class="option-desc">По ключевому слову</div>
-        </div>
-        <div class="option-card" onclick="selectCard('aiTool', 'chat', this)">
-          <div class="option-icon">🤖</div>
-          <div class="option-title">AI Ментор</div>
-          <div class="option-desc">Вопрос нейросети</div>
-        </div>
-        <div class="option-card" onclick="selectCard('aiTool', 'money', this)">
-          <div class="option-icon">💸</div>
-          <div class="option-title">Хуки: Бизнес</div>
-          <div class="option-desc">Деньги / Успех</div>
+    <section id="panel-ai" class="panel">
+      <div class="section">
+        <div class="section-head"><span class="step">WESTCUT AI</span><span class="section-title" data-i18n="ai_title">Выбери AI-инструмент</span></div>
+        <div class="grid2" id="aiCards">
+          <button class="option selected" onclick="selectCard('aiTool','chat',this)"><div class="emoji">🤖</div><div class="name" data-i18n="ai_chat">AI-помощник</div><div class="desc" data-i18n="ai_chat_d">Задать вопрос</div></button>
+          <button class="option" onclick="selectCard('aiTool','hashtags',this)"><div class="emoji">#️⃣</div><div class="name" data-i18n="hashtags">SEO-хэштеги</div><div class="desc" data-i18n="hashtags_d">Хэштеги и описание</div></button>
+          <button class="option" onclick="selectCard('aiTool','streamers',this)"><div class="emoji">🎮</div><div class="name" data-i18n="streamers">Хуки: стримеры</div><div class="desc">Streamer clips</div></button>
+          <button class="option" onclick="selectCard('aiTool','podcast',this)"><div class="emoji">🎙️</div><div class="name" data-i18n="podcast">Хуки: подкасты</div><div class="desc">Podcast clips</div></button>
+          <button class="option" onclick="selectCard('aiTool','crime',this)"><div class="emoji">🕵️</div><div class="name" data-i18n="crime">Хуки: криминал</div><div class="desc">Crime stories</div></button>
+          <button class="option" onclick="selectCard('aiTool','money',this)"><div class="emoji">💸</div><div class="name" data-i18n="money">Хуки: финансы</div><div class="desc">Money & business</div></button>
         </div>
       </div>
-    </div>
-
-    <div class="step-box">
-      <input type="text" id="aiQuery" class="input-field" placeholder="Ключевое слово (для тегов/ИИ): Kai Cenat, GTA 5..." />
-    </div>
-
-    <button class="action-btn" onclick="submitAI()" data-i18n="btn_ask_ai">
-      ✨ Сгенерировать в Maxudo Bot
-    </button>
-  </div>
+      <div class="section">
+        <input id="aiQuery" class="field" type="text" placeholder="Тема или вопрос для ИИ..." />
+        <p class="hint" data-i18n="ai_hint">Для AI-помощника и SEO-хэштегов укажи тему или вопрос. Для готовых паков хуков поле можно оставить пустым.</p>
+      </div>
+      <button class="primary" onclick="submitAI()" data-i18n="ai_btn">✨ Отправить запрос в WestCut</button>
+    </section>
+  </main>
+  <div class="footer">WESTCUT · VIDEO WORKSPACE</div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.ready(); tg.expand(); }
+    // Укажи username бота без @ для резервного deep-link, если Mini App открывается не из Reply-кнопки.
+    const BOT_USERNAME = "ТВОЙ_БОТ_ЮЗЕРНЕЙМ";
+    const state = { lang: 'ru', platform: 'TikTok', mode: 'soft', format: '1080', checkerPlatform: 'tt', aiTool: 'chat' };
 
-    // Получаем юзернейм бота автоматически из URL (?bot=...), который передаёт bot.py
-    const urlParams = new URLSearchParams(window.location.search);
-    const BOT_USERNAME = urlParams.get('bot') || "";
+    const user = tg?.initDataUnsafe?.user;
+    if (user?.first_name) document.getElementById('userGreeting').textContent = `HI, ${user.first_name}`;
 
-    // Проверяем режим запуска: если tg.initData пустой — открыто с нижней кнопки (sendData работает напрямую)
-    // Если tg.initData НЕ пустой — открыто с инлайн-кнопки под сообщением или кнопки меню
-    const IS_REPLY_KB_MODE = (!tg.initData || tg.initData.length === 0);
-
-    const state = {
-      lang: 'ru',
-      studioPlatform: 'TikTok',
-      studioMode: 'soft',
-      dlFormat: '1080',
-      chkPlatform: 'tt',
-      aiTool: 'streamers'
-    };
-
-    const user = tg.initDataUnsafe?.user;
-    if (user && user.first_name) {
-      document.getElementById('userGreeting').innerText = `👤 ${user.first_name}`;
-    }
-
-    const i18n = {
+    const dict = {
       ru: {
-        tab_studio: "Обработка",
-        tab_download: "Скачать",
-        tab_checker: "Чекер",
-        tab_ai: "ИИ & US",
-        step1: "Шаг 1",
-        step2: "Шаг 2",
-        choose_platform: "Выберите целевую платформу",
-        choose_mode: "Режим монтажа / Баннер",
-        m_soft: "Мягкая уник.",
-        m_soft_d: "Чистка метаданных",
-        m_hard: "Жёсткая уник.",
-        m_hard_d: "Обход неорганики",
-        m_ext: "Экстрим",
-        m_ext_d: "Геометрия + питч",
-        m_ban: "Наложить баннер",
-        m_ban_d: "Брендинг тимы",
-        m_split: "Наложить геймплей",
-        m_split_d: "2 экрана (GTA/Subway)",
-        m_vert: "Формат 9:16",
-        m_vert_d: "Размытый фон",
-        btn_apply_studio: "🚀 Применить и загрузить видео",
-        dl_link_title: "Ссылка на видео (YouTube / TikTok)",
-        dl_fmt_title: "Качество и формат",
-        btn_start_dl: "📥 Скачать выбранный ролик в бот",
-        chk_plat_title: "Платформа для проверки",
-        chk_input_title: "Ссылка или @handle канала",
-        chk_hint: "Укажите @username или ссылку на аккаунт/ролик для мгновенного AI-разбора.",
-        btn_run_chk: "🔍 Запустить AI-Проверку на тень",
-        ai_pack_title: "Готовые хуки или вопрос нейросети",
-        btn_ask_ai: "✨ Сгенерировать в Maxudo Bot"
+        welcome:'Твоя видеостудия',welcome_sub:'Монтаж, нарезка, загрузка и инструменты для контента — в одном месте.',tab_studio:'Студия',tab_download:'Загрузчик',tab_clips:'Нарезка',tab_checker:'Чекер',tab_ai:'AI',step1:'ШАГ 1',step2:'ШАГ 2',platform_title:'Куда готовим видео?',mode_title:'Выбери обработку',soft:'Мягкая обработка',soft_d:'Очистка метаданных',hard:'Расширенная обработка',hard_d:'Больше изменений видео',extreme:'Экстрим',extreme_d:'Геометрия и аудио',banner:'Добавить баннер',banner_d:'Брендинг поверх видео',split:'Split-screen',split_d:'Видео + геймплей',vertical:'Формат 9:16',vertical_d:'Вертикальный кадр',studio_btn:'🚀 Применить настройки',studio_hint:'После отправки бот подтвердит настройки. Затем пришли видео в чат Telegram файлом.',link_title:'Ссылка на исходное видео',download_hint:'Поддерживаются ссылки на YouTube, Shorts и TikTok. Можно скачать весь ролик или фрагмент по таймкоду.',quality_title:'Предпочитаемое качество',small_file:'Меньше размер',audio_only:'Только аудио',download_btn:'📥 Передать запрос боту',download_after:'Бот пришлёт кнопки для запуска скачивания выбранного ролика.',clips_title:'Найти топ-моменты',clips_hint:'WestCut передаст ссылку в модуль нарезки. Количество и длительность клипов можно будет настроить в боте.',clips_note:'<b>Как это работает:</b> отправь ссылку — бот откроет панель нарезки, где можно выбрать параметры и запустить поиск ярких моментов.',clips_btn:'✂️ Перейти к настройкам нарезки',checker_platform:'Что анализируем?',tt_check:'Аккаунт или видео',yt_check:'Канал, Shorts или видео',targets_title:'Ссылки или @username',checker_hint:'До 20 ссылок или имён пользователей, каждое с новой строки. Также можно отправить .txt файл прямо в чат.',checker_btn:'🔎 Запустить анализ',ai_title:'Выбери AI-инструмент',ai_chat:'AI-помощник',ai_chat_d:'Задать вопрос',hashtags:'SEO-хэштеги',hashtags_d:'Хэштеги и описание',streamers:'Хуки: стримеры',podcast:'Хуки: подкасты',crime:'Хуки: криминал',money:'Хуки: финансы',ai_hint:'Для AI-помощника и SEO-хэштегов укажи тему или вопрос. Для готовых паков хуков поле можно оставить пустым.',ai_btn:'✨ Отправить запрос в WestCut',need_url:'Сначала вставь ссылку на видео.',bad_url:'Проверь ссылку: она должна начинаться с http:// или https://',need_targets:'Добавь хотя бы одну ссылку или @username.',need_query:'Введи тему или вопрос.'
       },
       en: {
-        tab_studio: "Studio",
-        tab_download: "Download",
-        tab_checker: "Checker",
-        tab_ai: "AI & US",
-        step1: "Step 1",
-        step2: "Step 2",
-        choose_platform: "Select Target Platform",
-        choose_mode: "Editing Mode / Banner",
-        m_soft: "Soft Unique",
-        m_soft_d: "Clean metadata",
-        m_hard: "Hard Unique",
-        m_hard_d: "Bypass filters",
-        m_ext: "Extreme",
-        m_ext_d: "Geometry + Pitch",
-        m_ban: "Overlay Banner",
-        m_ban_d: "Team branding",
-        m_split: "Split Gameplay",
-        m_split_d: "2 Screens (GTA)",
-        m_vert: "9:16 Format",
-        m_vert_d: "Blur background",
-        btn_apply_studio: "🚀 Apply & Upload Video",
-        dl_link_title: "Video URL (YouTube / TikTok)",
-        dl_fmt_title: "Quality & Format",
-        btn_start_dl: "📥 Download Video to Bot",
-        chk_plat_title: "Target Platform",
-        chk_input_title: "Link or @handle",
-        chk_hint: "Enter @username or video URL for instant AI shadowban analysis.",
-        btn_run_chk: "🔍 Run AI Shadowban Check",
-        ai_pack_title: "US Viral Hooks & AI Mentor",
-        btn_ask_ai: "✨ Generate in Maxudo Bot"
+        welcome:'Your video workspace',welcome_sub:'Editing, clips, downloads and creator tools — all in one place.',tab_studio:'Studio',tab_download:'Download',tab_clips:'Clips',tab_checker:'Checker',tab_ai:'AI',step1:'STEP 1',step2:'STEP 2',platform_title:'Where are you publishing?',mode_title:'Choose processing mode',soft:'Soft processing',soft_d:'Metadata cleanup',hard:'Advanced processing',hard_d:'More video changes',extreme:'Extreme',extreme_d:'Geometry and audio',banner:'Add banner',banner_d:'Overlay team branding',split:'Split-screen',split_d:'Video + gameplay',vertical:'9:16 format',vertical_d:'Vertical framing',studio_btn:'🚀 Apply settings',studio_hint:'The bot will confirm your settings. Then send your video as a file in the Telegram chat.',link_title:'Source video URL',download_hint:'YouTube, Shorts and TikTok links are supported. Download the full video or a timecoded section.',quality_title:'Preferred quality',small_file:'Smaller file',audio_only:'Audio only',download_btn:'📥 Send request to bot',download_after:'The bot will send buttons to start downloading the selected video.',clips_title:'Find top moments',clips_hint:'WestCut will send the link to the clips module. You can configure clip count and duration in the bot.',clips_note:'<b>How it works:</b> send a link — the bot opens the clips panel where you can choose settings and find standout moments.',clips_btn:'✂️ Open clips settings',checker_platform:'What should be analyzed?',tt_check:'Account or video',yt_check:'Channel, Shorts or video',targets_title:'Links or @usernames',checker_hint:'Up to 20 links or usernames, one per line. You can also send a .txt file directly in the chat.',checker_btn:'🔎 Start analysis',ai_title:'Choose an AI tool',ai_chat:'AI assistant',ai_chat_d:'Ask a question',hashtags:'SEO hashtags',hashtags_d:'Hashtags and description',streamers:'Hooks: streamers',podcast:'Hooks: podcasts',crime:'Hooks: crime',money:'Hooks: finance',ai_hint:'Enter a topic or question for AI assistant and SEO hashtags. Leave empty for ready-made hook packs.',ai_btn:'✨ Send request to WestCut',need_url:'Paste a video link first.',bad_url:'Check the URL: it must start with http:// or https://',need_targets:'Add at least one link or @username.',need_query:'Enter a topic or question.'
       }
     };
 
@@ -615,130 +200,55 @@
       state.lang = lang;
       document.getElementById('btnRu').classList.toggle('active', lang === 'ru');
       document.getElementById('btnEn').classList.toggle('active', lang === 'en');
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (i18n[lang][key]) el.innerText = i18n[lang][key];
-      });
-      if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+      document.querySelectorAll('[data-i18n]').forEach(el => { const k=el.dataset.i18n; if (dict[lang][k]) el.innerHTML=dict[lang][k]; });
+      document.getElementById('dlTimecode').placeholder = lang==='ru' ? 'Таймкод (необязательно): 01:15-01:50' : 'Timecode (optional): 01:15-01:50';
+      document.getElementById('aiQuery').placeholder = lang==='ru' ? 'Тема или вопрос для ИИ...' : 'Topic or question for AI...';
+      if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
     }
-
-    function openTab(tabName, btnEl) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById('tab-' + tabName).classList.add('active');
-      btnEl.classList.add('active');
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    function openTab(name, btn) {
+      document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+      document.getElementById('panel-'+name).classList.add('active'); btn.classList.add('active');
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     }
-
-    function selectCard(stateKey, value, cardEl) {
-      state[stateKey] = value;
-      const parent = cardEl.parentElement;
-      parent.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
-      cardEl.classList.add('selected');
-      if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+    function selectCard(key,value,el) {
+      state[key]=value; el.parentElement.querySelectorAll('.option').forEach(x=>x.classList.remove('selected')); el.classList.add('selected');
+      if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
     }
-
-    // Универсальная отправка команды в бота (работает и из Инлайн-кнопки, и из Меню, и из Нижней клавиатуры)
-    function dispatchAction(fullPayload, compactCode) {
+    function validUrl(url) { try { const u=new URL(url); return u.protocol==='http:'||u.protocol==='https:'; } catch (_) { return false; } }
+    function sendPayload(payload) {
+      if (!tg) { alert('Открой WestCut Mini App внутри Telegram.'); return; }
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-
-      if (IS_REPLY_KB_MODE) {
-        tg.sendData(JSON.stringify(fullPayload));
-        return;
-      }
-
-      if (BOT_USERNAME) {
-        const safeCode = compactCode.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 62);
-        tg.openTelegramLink(`https://t.me/${BOT_USERNAME}?start=${safeCode}`);
-        setTimeout(() => tg.close(), 150);
-      } else {
-        tg.showAlert("Нажмите /start в боте, чтобы обновить кнопку запуска Mini App!");
+      try {
+        tg.sendData(JSON.stringify(payload));
+      } catch (e) {
+        const raw = JSON.stringify(payload);
+        const b64 = btoa(unescape(encodeURIComponent(raw))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+        if (BOT_USERNAME && BOT_USERNAME !== 'ТВОЙ_БОТ_ЮЗЕРНЕЙМ') { tg.openTelegramLink(`https://t.me/${BOT_USERNAME}?start=webapp_${b64}`); tg.close(); }
+        else tg.showAlert('Открой Mini App через кнопку приложения в Telegram-боте.');
       }
     }
-
-    function submitStudio() {
-      const code = `wa_s_${state.studioPlatform}_${state.studioMode}`;
-      dispatchAction({
-        action: "studio_preset",
-        platform: state.studioPlatform,
-        mode: state.studioMode
-      }, code);
-    }
-
+    function alertUser(key) { const msg=dict[state.lang][key]||key; if(tg) tg.showAlert(msg); else alert(msg); }
+    function submitStudio() { sendPayload({action:'studio_preset',platform:state.platform,mode:state.mode}); }
     function submitDownload() {
-      const url = document.getElementById('dlUrl').value.trim();
-      const timecode = document.getElementById('dlTimecode').value.trim();
-      if (!url) {
-        tg.showAlert("Введите ссылку на ролик YouTube или TikTok!");
-        return;
-      }
-
-      // Извлекаем короткий ID ролика для совместимости с 64-символьным лимитом Deep-Link
-      let code = `wa_dl_${state.dlFormat}`;
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-      const ttVidMatch = url.match(/\/video\/(\d{15,22})/);
-      const ttShortMatch = url.match(/(?:vm|vt)\.tiktok\.com\/([a-zA-Z0-9_-]+)/);
-
-      if (ytMatch) {
-        code = `wa_dy_${state.dlFormat}_${ytMatch[1]}`;
-      } else if (ttVidMatch) {
-        code = `wa_dv_${state.dlFormat}_${ttVidMatch[1]}`;
-      } else if (ttShortMatch) {
-        code = `wa_dt_${state.dlFormat}_${ttShortMatch[1]}`;
-      }
-
-      dispatchAction({
-        action: "download",
-        url: url,
-        timecode: timecode,
-        format: state.dlFormat
-      }, code);
+      const url=document.getElementById('dlUrl').value.trim(); const timecode=document.getElementById('dlTimecode').value.trim();
+      if(!url) return alertUser('need_url'); if(!validUrl(url)) return alertUser('bad_url');
+      sendPayload({action:'download',url,timecode,format:state.format});
     }
-
+    function submitClips() {
+      const url=document.getElementById('clipsUrl').value.trim(); if(!url) return alertUser('need_url'); if(!validUrl(url)) return alertUser('bad_url');
+      sendPayload({action:'clipsaw',url});
+    }
     function submitChecker() {
-      const targets = document.getElementById('chkTargets').value.trim();
-      if (!targets) {
-        tg.showAlert("Укажите ссылку или @username!");
-        return;
-      }
-
-      const firstLine = targets.split(/\r?\n/)[0].trim();
-      let cleanTarget = firstLine.replace(/^https?:\/\/(www\.)?(youtube\.com|tiktok\.com)\//i, '')
-                                 .replace(/^channel\//i, '')
-                                 .replace(/^@/, '')
-                                 .split('/')[0]
-                                 .split('?')[0]
-                                 .replace(/[^a-zA-Z0-9_-]/g, '');
-
-      const code = `wa_c_${state.chkPlatform}_${cleanTarget || 'user'}`;
-      dispatchAction({
-        action: "checker",
-        platform: state.chkPlatform,
-        targets: targets
-      }, code);
+      const targets=document.getElementById('checkerTargets').value.trim(); if(!targets) return alertUser('need_targets');
+      const lines=targets.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+      if(lines.length>20) { if(tg) tg.showAlert(state.lang==='ru'?'Можно отправить не более 20 целей за раз.':'You can submit up to 20 targets at a time.'); else alert('Maximum 20 targets.'); return; }
+      sendPayload({action:'checker',platform:state.checkerPlatform,targets:lines.join('\n')});
     }
-
     function submitAI() {
-      const query = document.getElementById('aiQuery').value.trim();
-      if (state.aiTool === 'hashtags' && !query) {
-        tg.showAlert("Введите ключевое слово для генерации тегов!");
-        return;
-      }
-
-      let code = `wa_h_${state.aiTool}`;
-      if (state.aiTool === 'hashtags') {
-        const kw = query.replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || 'viral';
-        code = `wa_tag_${kw}`;
-      } else if (state.aiTool === 'chat') {
-        const kw = query.replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || 'advice';
-        code = `wa_ai_${kw}`;
-      }
-
-      dispatchAction({
-        action: "ai_tool",
-        tool_type: state.aiTool,
-        query: query
-      }, code);
+      const query=document.getElementById('aiQuery').value.trim();
+      if((state.aiTool==='chat'||state.aiTool==='hashtags')&&!query) return alertUser('need_query');
+      sendPayload({action:'ai_tool',tool_type:state.aiTool,query});
     }
   </script>
 </body>
