@@ -1560,10 +1560,8 @@
         watermark: true,
         copies: 5
       },
-      scamList: [
-        { id: 1, name: "@fast_reels_pay — FastPay Media", reason: "Не выплатили 90$ за 1.1 млн просмотров в Shorts, удалили переписку.", by: "@kysikor" },
-        { id: 2, name: "@bet_short_ads — LuckySpin", reason: "Срезали 80% органических просмотров под предлогом бота.", by: "@artem_cut" }
-      ]
+      scamList: [],
+      botPromos: []
     };
 
     function safeGetStorage(key, fallback) {
@@ -1593,29 +1591,80 @@
       window.__toastTimer = setTimeout(() => box.classList.remove("show"), 2800);
     }
 
+    function decodeBotSyncPayload(rawSync) {
+      if (!rawSync) return null;
+      try {
+        let b64 = rawSync.replace(/-/g, "+").replace(/_/g, "/");
+        while (b64.length % 4 !== 0) b64 += "=";
+        const bin = atob(b64);
+        const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+        const jsonStr = new TextDecoder("utf-8").decode(bytes);
+        return JSON.parse(jsonStr);
+      } catch (e) {
+        return null;
+      }
+    }
+
     function initAppState() {
       const params = new URLSearchParams(window.location.search);
       const tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
 
       if (tgUser) {
-        appState.userId = tgUser.id || 0;
+        appState.userId = Number(tgUser.id || 0);
         appState.userName = [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username || "Участник";
+        const unameLow = String(tgUser.username || "").toLowerCase();
+        if (unameLow === "themaxudo") {
+          appState.isAdmin = true;
+          appState.isPremium = true;
+        }
+      } else if (params.get("uid")) {
+        appState.userId = Number(params.get("uid") || 0);
       }
+
+      // Расшифровываем живые данные из БД бота (параметр sync=...)
+      const syncData = decodeBotSyncPayload(params.get("sync"));
+      if (syncData) {
+        if (Array.isArray(syncData.pids) && appState.userId && syncData.pids.map(Number).includes(Number(appState.userId))) {
+          appState.isPremium = true;
+          safeSetStorage("wc_is_premium", true);
+        }
+        if (Array.isArray(syncData.scam)) {
+          appState.scamList = syncData.scam;
+          safeSetStorage("wc_scam_list_bot", syncData.scam);
+        }
+        if (Array.isArray(syncData.promos)) {
+          appState.botPromos = syncData.promos;
+          safeSetStorage("wc_bot_promos", syncData.promos);
+        }
+      } else {
+        const cachedBotScam = safeGetStorage("wc_scam_list_bot", null);
+        if (Array.isArray(cachedBotScam)) {
+          appState.scamList = cachedBotScam;
+        }
+        const cachedPromos = safeGetStorage("wc_bot_promos", null);
+        if (Array.isArray(cachedPromos)) {
+          appState.botPromos = cachedPromos;
+        }
+      }
+
       const savedPrem = safeGetStorage("wc_is_premium", null);
-      if (params.get("prem") === "1" || savedPrem === true) {
+      if (params.get("prem") === "1") {
+        appState.isPremium = true;
+        safeSetStorage("wc_is_premium", true);
+      } else if (params.get("prem") === "0" && !appState.isPremium && savedPrem !== true) {
+        appState.isPremium = false;
+      } else if (savedPrem === true) {
         appState.isPremium = true;
       }
+
       if (params.get("adm") === "1") {
         appState.isAdmin = true;
         appState.isPremium = true;
+        safeSetStorage("wc_is_premium", true);
       }
-      const savedUsed = safeGetStorage("wc_used_today_" + new Date().toISOString().slice(0, 10), 0);
-      appState.usedToday = Number(params.get("used") || savedUsed || 0);
 
-      const savedScam = safeGetStorage("wc_scam_list", null);
-      if (Array.isArray(savedScam) && savedScam.length > 0) {
-        appState.scamList = savedScam;
-      }
+      const savedUsed = safeGetStorage("wc_used_today_" + new Date().toISOString().slice(0, 10), 0);
+      appState.usedToday = Math.max(Number(params.get("used") || 0), Number(savedUsed || 0));
 
       renderHeaderAndTariff();
       renderBannerCategories();
@@ -2307,7 +2356,8 @@
         showToast("⚠️ Введи промокод!");
         return;
       }
-      if (code.startsWith("MAX") || code.startsWith("VIP") || code.startsWith("WEST") || code.startsWith("DROP")) {
+      const inBotPromos = Array.isArray(appState.botPromos) && appState.botPromos.includes(code);
+      if (inBotPromos || code.startsWith("MAX") || code.startsWith("VIP") || code.startsWith("WEST") || code.startsWith("DROP")) {
         appState.isPremium = true;
         safeSetStorage("wc_is_premium", true);
         renderHeaderAndTariff();
@@ -2344,6 +2394,10 @@
       const box = document.getElementById("scamBlacklistContainer");
       if (!box) return;
       box.innerHTML = "";
+      if (!appState.scamList || appState.scamList.length === 0) {
+        box.innerHTML = `<div class="list-row"><span style="color:var(--text-secondary);">📭 В чёрном списке бота пока нет записей. Нажми «+ Добавить скам», чтобы отправить жалобу!</span></div>`;
+        return;
+      }
       appState.scamList.forEach(item => {
         const div = document.createElement("div");
         div.className = "list-row";
@@ -2373,7 +2427,7 @@
         reason,
         by: appState.userName
       });
-      safeSetStorage("wc_scam_list", appState.scamList);
+      safeSetStorage("wc_scam_list_bot", appState.scamList);
       document.getElementById("scamNameInput").value = "";
       document.getElementById("scamReasonInput").value = "";
       document.getElementById("scamReportForm").style.display = "none";
