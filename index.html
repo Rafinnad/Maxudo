@@ -1109,6 +1109,26 @@
             <div class="opt-name">Субтитры</div>
             <div class="opt-hint">Стиль Hormozi / MrBeast</div>
           </button>
+          <button type="button" class="opt-btn" id="stOptGameplay" onclick="toggleStudioFlag('gameplaySplit', this)">
+            <div class="opt-top"><span class="opt-icon">🎮</span><span class="opt-check">✓</span></div>
+            <div class="opt-name">Геймплей (2 экрана)</div>
+            <div class="opt-hint">Сверху видео • Снизу игра</div>
+          </button>
+          <button type="button" class="opt-btn" id="stOptMusic" onclick="toggleStudioFlag('bgMusic', this)">
+            <div class="opt-top"><span class="opt-icon">🎵</span><span class="opt-check">✓</span></div>
+            <div class="opt-name">Фоновая музыка</div>
+            <div class="opt-hint">Трендовый бит с приглушением</div>
+          </button>
+          <button type="button" class="opt-btn active" id="stOptEnhance" onclick="toggleStudioFlag('enhance1080', this)">
+            <div class="opt-top"><span class="opt-icon">✨</span><span class="opt-check">✓</span></div>
+            <div class="opt-name">Улучшить качество</div>
+            <div class="opt-hint">Full HD 1080p + Чёткость</div>
+          </button>
+          <button type="button" class="opt-btn" id="stOptCompress" onclick="toggleStudioFlag('compressLossless', this)">
+            <div class="opt-top"><span class="opt-icon">🗜</span><span class="opt-check">✓</span></div>
+            <div class="opt-name">Сжать без потерь</div>
+            <div class="opt-hint">Оптимизация под TikTok</div>
+          </button>
         </div>
 
         <div class="grid-2">
@@ -1396,6 +1416,35 @@
         </div>
         <div id="hooksOutputBox" style="display: none; margin-top: 10px; background: var(--bg-elevated); padding: 12px; border-radius: 10px; font-size: 12px; white-space: pre-wrap;"></div>
       </div>
+
+      <!-- 🕵️ Шпион конкурентов (WestCut Radar) -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🕵️ Шпион конкурентов (WestCut Radar)</div>
+          <span class="tag">Мониторинг</span>
+        </div>
+        <label class="field-label">Добавь ссылку или @username конкурента (TikTok / YouTube):</label>
+        <div class="btn-row" style="margin-top: 0; margin-bottom: 10px;">
+          <input type="text" id="spyTargetInput" class="input" style="margin-bottom: 0;" placeholder="Например: @lentakadrov или https://www.tiktok.com/@..." />
+          <button type="button" class="btn-primary" style="width: auto; white-space: nowrap; padding: 0 14px;" onclick="addAndScanCompetitorInApp()">
+            + Сканировать
+          </button>
+        </div>
+        <div id="spyRadarResults" class="clean-list"></div>
+      </div>
+
+      <!-- 🤖 AI-Ментор по алгоритмам TikTok & Shorts -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🤖 AI-Ментор (Вопросы по алгоритмам и удержанию)</div>
+          <span class="tag">24/7 Эксперт</span>
+        </div>
+        <input type="text" id="aiMentorQuestionInput" class="input" placeholder="Спроси: как пробить 0 просмотров / когда лучше лить / как греть аккаунт?" />
+        <button type="button" class="btn-primary" onclick="askAiMentorInApp()">
+          💬 Получить ответ AI-Ментора
+        </button>
+        <div id="aiMentorAnswerBox" style="display: none; margin-top: 10px; background: var(--bg-elevated); padding: 12px; border-radius: 10px; font-size: 12px; line-height: 1.5; border: 1px solid var(--accent-border);"></div>
+      </div>
     </section>
 
     <!-- ================= ВКЛАДКА 5: 👤 КАБИНЕТ, ПРОМОКОДЫ, ЧС БАННЕРОК ================= -->
@@ -1458,6 +1507,59 @@
         </div>
 
         <div id="scamBlacklistContainer" class="clean-list"></div>
+      </div>
+
+      <!-- ⏰ Дневной план и прогресс -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">⏰ Мой дневной план залива</div>
+          <span class="tag" id="cabPlanBadge">0 / 5 роликов</span>
+        </div>
+        <div class="progress-track" style="margin-bottom: 10px;">
+          <div class="progress-fill" id="cabPlanBar" style="width: 0%;"></div>
+        </div>
+        <div class="grid-3">
+          <button type="button" class="opt-btn" onclick="setDailyGoalInApp(3, this)">
+            <div class="opt-name">🎯 3 ролика</div>
+            <div class="opt-hint">Лёгкий темп</div>
+          </button>
+          <button type="button" class="opt-btn active" onclick="setDailyGoalInApp(5, this)">
+            <div class="opt-name">🔥 5 роликов</div>
+            <div class="opt-hint">Оптимально</div>
+          </button>
+          <button type="button" class="opt-btn" onclick="setDailyGoalInApp(10, this)">
+            <div class="opt-name">🚀 10 роликов</div>
+            <div class="opt-hint">Марафон</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 🎁 Реферальная система -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🎁 Реферальная система (3 друга = 7 дней 💎)</div>
+          <span class="tag">Лимит: 1 бонус/мес</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+          Пригласи 3 друзей в бота по своей личной ссылке и получи <b>7 дней 💎 Premium</b> бесплатно!
+        </p>
+        <div class="btn-row" style="margin-top: 0;">
+          <input type="text" id="refLinkDisplay" class="input" style="margin-bottom: 0;" readonly value="https://t.me/westcut_bot?start=ref_0" />
+          <button type="button" class="btn-primary" style="width: auto; white-space: nowrap; padding: 0 14px;" onclick="copyReferralLinkInApp()">
+            📋 Скопировать
+          </button>
+        </div>
+      </div>
+
+      <!-- 📜 История обработанных роликов -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📜 История обработанных видео</div>
+          <span class="tag tag-neutral">Сессия</span>
+        </div>
+        <div id="cabHistoryList" class="clean-list">
+          <div class="list-row"><span style="color: var(--text-secondary);">Пока нет обработанных роликов в этой сессии.</span></div>
+        </div>
       </div>
 
       <!-- 📈 Накрутка просмотров (В разработке) -->
@@ -1609,8 +1711,16 @@
     }
 
     function initAppState() {
+      // Очищаем старый тестовый ключ wc_is_premium, из-за которого раньше у всех оставался включённым Premium в браузере!
+      try { localStorage.removeItem("wc_is_premium"); } catch (e) {}
+
       const params = new URLSearchParams(window.location.search);
       const tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
+
+      appState.isPremium = false;
+      appState.isAdmin = false;
+      appState.dailyGoal = Number(safeGetStorage("wc_daily_goal", 5) || 5);
+      appState.historyItems = safeGetStorage("wc_history_items", []);
 
       if (tgUser) {
         appState.userId = Number(tgUser.id || 0);
@@ -1622,14 +1732,19 @@
         }
       } else if (params.get("uid")) {
         appState.userId = Number(params.get("uid") || 0);
+        if (Number(appState.userId) === 5961221447) {
+          appState.isAdmin = true;
+          appState.isPremium = true;
+        }
       }
 
       // Расшифровываем живые данные из БД бота (параметр sync=...)
       const syncData = decodeBotSyncPayload(params.get("sync"));
       if (syncData) {
-        if (Array.isArray(syncData.pids) && appState.userId && syncData.pids.map(Number).includes(Number(appState.userId))) {
-          appState.isPremium = true;
-          safeSetStorage("wc_is_premium", true);
+        if (Array.isArray(syncData.pids) && appState.userId > 0) {
+          // СТРОГАЯ ПРОВЕРКА: есть ли ID текущего пользователя в списке Premium БД бота
+          const hasPremInBotDb = syncData.pids.map(Number).includes(Number(appState.userId));
+          appState.isPremium = hasPremInBotDb || Number(appState.userId) === 5961221447;
         }
         if (Array.isArray(syncData.scam)) {
           appState.scamList = syncData.scam;
@@ -1650,20 +1765,26 @@
         }
       }
 
-      const savedPrem = safeGetStorage("wc_is_premium", null);
-      if (params.get("prem") === "1") {
+      // Если ссылка была сгенерирована ботом персонально под этого пользователя (uid совпадает)
+      const urlUid = Number(params.get("uid") || 0);
+      if (params.get("prem") === "1" && (!appState.userId || !urlUid || urlUid === appState.userId)) {
         appState.isPremium = true;
-        safeSetStorage("wc_is_premium", true);
-      } else if (params.get("prem") === "0" && !appState.isPremium && savedPrem !== true) {
+      } else if (params.get("prem") === "0" && urlUid && urlUid === appState.userId && Number(appState.userId) !== 5961221447) {
         appState.isPremium = false;
-      } else if (savedPrem === true) {
-        appState.isPremium = true;
       }
 
-      if (params.get("adm") === "1") {
-        appState.isAdmin = true;
-        appState.isPremium = true;
-        safeSetStorage("wc_is_premium", true);
+      // Проверяем, активировал ли этот конкретный user_id действующий промокод из бота
+      if (appState.userId > 0) {
+        const activatedPromo = safeGetStorage("wc_promo_uid_" + appState.userId, "");
+        if (activatedPromo && Array.isArray(appState.botPromos) && appState.botPromos.includes(activatedPromo)) {
+          appState.isPremium = true;
+        }
+      }
+
+      const botName = params.get("bot") || "westcut_bot";
+      const refInput = document.getElementById("refLinkDisplay");
+      if (refInput) {
+        refInput.value = "https://t.me/" + botName + "?start=ref_" + (appState.userId || 0);
       }
 
       const savedUsed = safeGetStorage("wc_used_today_" + new Date().toISOString().slice(0, 10), 0);
@@ -1672,6 +1793,7 @@
       renderHeaderAndTariff();
       renderBannerCategories();
       renderScamBlacklist();
+      renderCabinetExtras();
     }
 
     function renderHeaderAndTariff() {
@@ -1962,19 +2084,56 @@
         vid.onerror = resolve;
       });
 
+      // Full HD 1080x1920 с высоким битрейтом 12 Мбит/с и сглаживанием высокой чёткости
       const canvas = document.createElement("canvas");
-      canvas.width = 540;
-      canvas.height = 960;
-      const ctx = canvas.getContext("2d");
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const ctx = canvas.getContext("2d", { alpha: false });
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
-      const dur = Math.min(12, Math.max(2, vid.duration || 4));
+      const dur = Math.min(18, Math.max(2, vid.duration || 5));
       const bannerPoints = (cfg.bannerTimestamps && cfg.bannerTimestamps.length > 0)
         ? cfg.bannerTimestamps
         : (cfg.insertBanner ? [Number((dur * 0.5).toFixed(1))] : []);
 
       const stream = canvas.captureStream(30);
-      const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-      const recorder = new MediaRecorder(stream, { mimeType: mime });
+      // Подключаем реальный звук исходного видео (с усилением голоса и баса через WebAudio API)
+      try {
+        vid.muted = false;
+        vid.volume = 1.0;
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) {
+          const ac = new AC();
+          const srcNode = ac.createMediaElementSource(vid);
+          const bassFilter = ac.createBiquadFilter();
+          bassFilter.type = "lowshelf";
+          bassFilter.frequency.value = 120;
+          bassFilter.gain.value = appState.studio.voiceBoost ? 4.5 : 1.5;
+
+          const voiceFilter = ac.createBiquadFilter();
+          voiceFilter.type = "peaking";
+          voiceFilter.frequency.value = 3200;
+          voiceFilter.gain.value = appState.studio.voiceBoost ? 5.0 : 2.0;
+
+          const destNode = ac.createMediaStreamDestination();
+          srcNode.connect(bassFilter);
+          bassFilter.connect(voiceFilter);
+          voiceFilter.connect(destNode);
+          destNode.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+        }
+      } catch (e) {
+        vid.muted = true;
+      }
+
+      const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+        ? "video/webm;codecs=vp9"
+        : (MediaRecorder.isTypeSupported("video/mp4") ? "video/mp4" : "video/webm");
+      const recorder = new MediaRecorder(stream, {
+        mimeType: mime,
+        videoBitsPerSecond: 12000000,
+        audioBitsPerSecond: 192000
+      });
       const chunks = [];
       recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
 
@@ -1993,15 +2152,51 @@
         ctx.fillStyle = "#09090b";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Отрисовка видео с учётом отзеркаливания (hflip) и зума
+        // Отрисовка видео в Full HD 1080x1920 с сохранением пропорций, кропом +2% и улучшением цвета
         ctx.save();
         if (cfg.mirror) {
           ctx.translate(canvas.width, 0);
           ctx.scale(-1, 1);
         }
+        if (appState.studio.enhance1080 !== false) {
+          ctx.filter = "contrast(1.03) saturate(1.04) brightness(1.008)";
+        }
         try {
-          ctx.drawImage(vid, 0, 120, canvas.width, canvas.height - 240);
+          const vw = vid.videoWidth || 540;
+          const vh = vid.videoHeight || 960;
+          if (appState.studio.gameplaySplit) {
+            // Верхняя половина: основное видео (1080x960), нижняя половина: динамический геймплей-экран (1080x960)
+            ctx.drawImage(vid, vw * 0.01, vh * 0.01, vw * 0.98, vh * 0.98, 0, 0, canvas.width, canvas.height / 2);
+            ctx.filter = "none";
+            const gpGrad = ctx.createLinearGradient(0, canvas.height / 2, 0, canvas.height);
+            gpGrad.addColorStop(0, "#0f172a");
+            gpGrad.addColorStop(1, "#1e1b4b");
+            ctx.fillStyle = gpGrad;
+            ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+            // Движущаяся трасса геймплея снизу
+            ctx.strokeStyle = "rgba(250, 204, 21, 0.35)";
+            ctx.lineWidth = 4;
+            for (let lane = 1; lane <= 3; lane++) {
+              const lx = (canvas.width / 4) * lane;
+              ctx.beginPath();
+              ctx.moveTo(lx, canvas.height / 2);
+              ctx.lineTo(lx + (lane - 2) * 140, canvas.height);
+              ctx.stroke();
+            }
+            const carX = canvas.width / 2 + Math.sin(curT * 3.2) * 180;
+            ctx.fillStyle = "#facc15";
+            ctx.fillRect(carX - 45, canvas.height - 220, 90, 130);
+          } else {
+            // Заполняем фон мягким размытием и поверх рисуем чёткий кадр с +2% кроп-зумом
+            const scaleCover = Math.max(canvas.width / vw, canvas.height / vh) * 1.02;
+            const dw = vw * scaleCover;
+            const dh = vh * scaleCover;
+            const dx = (canvas.width - dw) / 2;
+            const dy = (canvas.height - dh) / 2;
+            ctx.drawImage(vid, dx, dy, dw, dh);
+          }
         } catch (e) {}
+        ctx.filter = "none";
         ctx.restore();
 
         // 🧲 Анти-АП: полупрозрачная клетчатая сетка на всё видео
@@ -2143,6 +2338,10 @@
       document.getElementById("studioResultBadge").textContent = copiesCnt > 1 ? (copiesCnt + " уник. копий") : "Готово";
 
       appState.usedToday += 1;
+      appState.historyItems = appState.historyItems || [];
+      appState.historyItems.unshift({ title: "Монтаж (" + (sourceMode === "premium" ? "💎 Авто" : appState.studio.uniq) + ")", time: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) });
+      safeSetStorage("wc_history_items", appState.historyItems.slice(0, 15));
+      renderCabinetExtras();
       safeSetStorage("wc_used_today_" + new Date().toISOString().slice(0, 10), appState.usedToday);
       renderHeaderAndTariff();
       showToast("✅ Видео успешно смонтировано прямо в приложении!");
@@ -2566,15 +2765,127 @@
         return;
       }
       const inBotPromos = Array.isArray(appState.botPromos) && appState.botPromos.includes(code);
-      if (inBotPromos || code.startsWith("MAX") || code.startsWith("VIP") || code.startsWith("WEST") || code.startsWith("DROP")) {
+      if (inBotPromos) {
         appState.isPremium = true;
-        safeSetStorage("wc_is_premium", true);
+        if (appState.userId > 0) {
+          safeSetStorage("wc_promo_uid_" + appState.userId, code);
+        }
         renderHeaderAndTariff();
         document.getElementById("promoCodeInput").value = "";
         showToast("🎉 Промокод " + code + " активирован! Включён 💎 Premium!");
       } else {
-        showToast("❌ Промокод не найден или срок его действия истёк.");
+        showToast("❌ Такого промокода нет в базе бота или лимит активаций исчерпан.");
       }
+    }
+
+    function renderCabinetExtras() {
+      const goal = appState.dailyGoal || 5;
+      const used = appState.usedToday || 0;
+      const badge = document.getElementById("cabPlanBadge");
+      const bar = document.getElementById("cabPlanBar");
+      if (badge) badge.textContent = used + " / " + goal + " роликов";
+      if (bar) bar.style.width = Math.min(100, Math.round((used / goal) * 100)) + "%";
+
+      const histBox = document.getElementById("cabHistoryList");
+      if (histBox && Array.isArray(appState.historyItems) && appState.historyItems.length > 0) {
+        histBox.innerHTML = "";
+        appState.historyItems.slice(0, 8).forEach(h => {
+          const r = document.createElement("div");
+          r.className = "list-row";
+          r.innerHTML = `<span>🎬 <b>${h.title}</b></span><span style="color:var(--text-secondary);font-size:11px;">${h.time}</span>`;
+          histBox.appendChild(r);
+        });
+      }
+    }
+
+    function setDailyGoalInApp(goalNum, btnEl) {
+      appState.dailyGoal = goalNum;
+      safeSetStorage("wc_daily_goal", goalNum);
+      btnEl.parentElement.querySelectorAll(".opt-btn").forEach(b => b.classList.remove("active"));
+      btnEl.classList.add("active");
+      renderCabinetExtras();
+      showToast("🎯 Дневная цель установлена: " + goalNum + " роликов!");
+    }
+
+    function copyReferralLinkInApp() {
+      const inp = document.getElementById("refLinkDisplay");
+      if (!inp) return;
+      inp.select();
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(inp.value);
+        } else {
+          document.execCommand("copy");
+        }
+      } catch (e) {
+        document.execCommand("copy");
+      }
+      showToast("📋 Реферальная ссылка скопирована!");
+    }
+
+    async function addAndScanCompetitorInApp() {
+      const raw = document.getElementById("spyTargetInput").value.trim();
+      if (!raw) {
+        showToast("⚠️ Введи @username или ссылку на конкурента!");
+        return;
+      }
+      const box = document.getElementById("spyRadarResults");
+      const uname = raw.replace(/^.*tiktok\.com\/@/, "").replace(/^@/, "").split(/[/?#]/)[0] || raw;
+      box.innerHTML = `<div class="list-row"><span>🕵️ Сканирую свежие ролики @${uname}...</span></div>`;
+
+      const j = await fetchJsonWithCorsFallback("https://www.tikwm.com/api/user/posts?unique_id=" + encodeURIComponent(uname) + "&count=8");
+      const videos = (j && j.data && Array.isArray(j.data.videos)) ? j.data.videos : [];
+      if (videos.length > 0) {
+        const best = videos.reduce((a, b) => (Number(b.play_count || 0) > Number(a.play_count || 0) ? b : a), videos[0]);
+        const views = Number(best.play_count || 0).toLocaleString("ru-RU");
+        const likes = Number(best.digg_count || 0).toLocaleString("ru-RU");
+        const playUrl = best.hdplay || best.play || "";
+        box.innerHTML = `
+          <div class="card" style="background:var(--bg-elevated);margin-bottom:0;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;">
+              <b>🎵 @${uname} — Лучший ролик</b>
+              <span style="color:var(--accent);">👁 ${views} | ❤️ ${likes}</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;">${(best.title || "Вирусный ролик конкурента").slice(0, 80)}</div>
+            ${playUrl ? `<video src="${playUrl}" controls playsinline style="width:100%;max-height:220px;border-radius:8px;background:#000;margin-bottom:8px;"></video>` : ""}
+            <div class="btn-row">
+              ${playUrl ? `<button type="button" class="btn-primary" onclick="selectRemoteVideoForStudio('${playUrl}', 'spy_${uname}.mp4')">🎬 Забрать ролик в Студию</button>` : ""}
+            </div>
+          </div>
+        `;
+        showToast("🕵️ Конкурент @" + uname + " просканирован!");
+        return;
+      }
+
+      // Если прямой профиль закрыт, ищем ролики этого автора через поиск
+      const vids2 = await fetchVideosByUrlOrKeywords(uname, 2);
+      renderSelectableVideosList(box, vids2, "@" + uname);
+      showToast("🕵️ Найдены ролики по запросу @" + uname + "!");
+    }
+
+    function askAiMentorInApp() {
+      const q = document.getElementById("aiMentorQuestionInput").value.trim();
+      if (!q) {
+        showToast("⚠️ Напиши свой вопрос для AI-Ментора!");
+        return;
+      }
+      const box = document.getElementById("aiMentorAnswerBox");
+      box.style.display = "block";
+      const low = q.toLowerCase();
+      if (low.includes("0 просм") || low.includes("нул") || low.includes("тень") || low.includes("тенев")) {
+        box.innerHTML =
+          "<b>🤖 Ответ AI-Ментора (Разбор 0 просмотров / Тени):</b><br><br>" +
+          "1. <b>Причина:</b> TikTok детектит совпадение метаданных или первых 3 секунд видео.<br>" +
+          "2. <b>Решение в WestCut:</b> Выбери режим <b>🔥 TikTok Pro (Анти-Тень)</b> — он стирает все теги кодировщика, делает зум +2%, ускорение +2% (atempo), меняет цвет и ставит зум-хук в первые 2.5 сек.<br>" +
+          "3. <b>Прогрев:</b> Перед заливом полистай ленту 10–15 минут и не заливай больше 1 ролика в час с одного аккаунта.";
+      } else {
+        box.innerHTML =
+          "<b>🤖 Рекомендация AI-Ментора по твоему вопросу:</b><br><br>" +
+          "• Для максимального удержания (75%+) ставь <b>🪝 Авто-Хук (первые 2 сек)</b> и <b>⏳ Прогресс-бар сверху</b>.<br>" +
+          "• На фильмах и сериалах обязательно включай <b>🧲 Анти-АП (прозрачная клетчатая сетка + отзеркаливание)</b>.<br>" +
+          "• Лучшее время публикации: <b>12:00–14:00</b> и <b>18:30–22:00</b> по целевому ГЕО.";
+      }
+      showToast("🤖 AI-Ментор ответил!");
     }
 
     function toggleDemoPremiumMode() {
@@ -2935,6 +3246,10 @@
         return;
       }
       appState.usedToday += 1;
+      appState.historyItems = appState.historyItems || [];
+      appState.historyItems.unshift({ title: "Монтаж (" + (sourceMode === "premium" ? "💎 Авто" : appState.studio.uniq) + ")", time: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) });
+      safeSetStorage("wc_history_items", appState.historyItems.slice(0, 15));
+      renderCabinetExtras();
       safeSetStorage("wc_used_today_" + new Date().toISOString().slice(0, 10), appState.usedToday);
       renderHeaderAndTariff();
       showToast("🚀 Ролик поставлен в очередь Автопостинга и засчитан в дневной план!");
