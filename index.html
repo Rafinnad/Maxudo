@@ -1616,7 +1616,7 @@
         appState.userId = Number(tgUser.id || 0);
         appState.userName = [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username || "Участник";
         const unameLow = String(tgUser.username || "").toLowerCase();
-        if (unameLow === "themaxudo") {
+        if (unameLow === "themaxudo" || Number(appState.userId) === 5961221447) {
           appState.isAdmin = true;
           appState.isPremium = true;
         }
