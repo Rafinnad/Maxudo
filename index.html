@@ -2926,7 +2926,7 @@
         div.innerHTML = `
           <div style="display:flex;justify-content:space-between;width:100%;">
             <b style="color:var(--danger);">🚫 #${item.id} ${item.name}</b>
-            <span style="font-size:10px;color:var(--text-muted);">От: ${item.by}</span>
+            
           </div>
           <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">⚠️ ${item.reason}</div>
         `;
@@ -2945,7 +2945,7 @@
         id: appState.scamList.length + 1,
         name,
         reason,
-        by: appState.userName
+        by: ""
       });
       safeSetStorage("wc_scam_list_bot", appState.scamList);
       document.getElementById("scamNameInput").value = "";
