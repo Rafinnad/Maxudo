@@ -1482,6 +1482,15 @@
             <span style="color: var(--text-secondary);">Обработано сегодня:</span>
             <b id="cabUsedToday">0 шт.</b>
           </div>
+          <div class="list-row">
+            <span style="color: var(--text-secondary);">💰 Твой баланс:</span>
+            <b id="cabBalanceRub" style="color: var(--accent);">0.00 ₽</b>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-bottom: 8px;">
+          <button type="button" class="btn-secondary" onclick="showTopupBalanceModalInApp()">
+            💰 Пополнить баланс
+          </button>
         </div>
         <div class="btn-row">
           <button type="button" class="btn-primary" onclick="openTelegramContact('themaxudo')">
@@ -1508,7 +1517,7 @@
       <!-- 🚫 Чёрный список скам-баннерок -->
       <div class="card">
         <div class="card-head">
-          <div class="card-title">🚫 ЧС баннерок</div>
+          <div class="card-title">🚫 Скам рекламодатели</div>
           <button type="button" class="chip active" onclick="toggleScamForm()">+ Добавить скам</button>
         </div>
 
@@ -1576,15 +1585,38 @@
         </div>
       </div>
 
-      <!-- 📈 Накрутка просмотров (В разработке) -->
+      <!-- 📈 Накрутка просмотров TikTok (до 10 000) -->
       <div class="card">
         <div class="card-head">
-          <div class="card-title">📈 Накрутка просмотров (TikTok &amp; Shorts)</div>
-          <span class="tag tag-neutral">В разработке</span>
+          <div class="card-title">📈 Докрутка просмотров TikTok</div>
+          <span class="tag" id="boostCostBadge">К оплате: 1.00 ₽</span>
         </div>
-        <p style="font-size: 12px; color: var(--text-secondary);">
-          🚧 Модуль автоматического стартового буста просмотров, лайков и удержания сейчас проходит закрытое тестирование и скоро станет доступен прямо внутри приложения.
-        </p>
+
+        <label class="field-label">1. Выбери категорию накрутки (Soc-Rocket):</label>
+        <select id="boostServiceSelect" class="select" onchange="recalcBoostCostInApp()">
+          <option value="410" data-rate="1">410. Просмотры - Быстрые - 1 руб ⚡️⚡️</option>
+          <option value="414" data-rate="3">414. Просмотры - Турбо - 3 руб ⚡️⚡️⚡️</option>
+          <option value="416" data-rate="7">416. Просмотры - Трендовые - 7 руб ⚡️⚡️</option>
+          <option value="418" data-rate="11">418. Просмотры - Живые - 11 руб ⚡️⚡️⭐️🆕</option>
+        </select>
+
+        <label class="field-label">2. Количество просмотров (максимум до 10 000):</label>
+        <div class="chip-row" style="margin-bottom: 8px;">
+          <span class="chip" onclick="setBoostQtyInApp(100, this)">+100 просмотров</span>
+          <span class="chip" onclick="setBoostQtyInApp(500, this)">+500 просмотров</span>
+          <span class="chip active" onclick="setBoostQtyInApp(1000, this)">+1000 просмотров</span>
+          <span class="chip" onclick="setBoostQtyInApp(5000, this)">+5000 просмотров</span>
+          <span class="chip" onclick="setBoostQtyInApp(10000, this)">+10000 просмотров</span>
+        </div>
+        <input type="number" id="boostQtyInput" class="input" min="100" max="10000" step="100" value="1000" oninput="recalcBoostCostInApp()" placeholder="Введи число от 100 до 10000" />
+
+        <label class="field-label">3. Ссылка на видео TikTok:</label>
+        <input type="text" id="boostLinkInput" class="input" placeholder="https://vt.tiktok.com/... или https://www.tiktok.com/@..." />
+
+        <button type="button" class="btn-primary" onclick="submitTikTokBoostInApp()">
+          🚀 Запустить накрутку TikTok
+        </button>
+        <div id="boostResultBox" class="clean-list" style="display: none; margin-top: 10px;"></div>
       </div>
     </section>
   </div>
@@ -1767,6 +1799,9 @@
         if (Array.isArray(syncData.promos)) {
           appState.botPromos = syncData.promos;
           safeSetStorage("wc_bot_promos", syncData.promos);
+        }
+        if (typeof syncData.bal === "number") {
+          appState.balanceRub = syncData.bal;
         }
       } else {
         const cachedBotScam = safeGetStorage("wc_scam_list_bot", null);
@@ -2807,6 +2842,8 @@
     }
 
     function renderCabinetExtras() {
+      const balEl = document.getElementById("cabBalanceRub");
+      if (balEl) balEl.textContent = Number(appState.balanceRub || 0).toFixed(2) + " ₽";
       const goal = appState.dailyGoal || 5;
       const used = appState.usedToday || 0;
       const badge = document.getElementById("cabPlanBadge");
@@ -3322,6 +3359,85 @@
       if (kInp) kInp.value = titleStr;
       openStudioModule("kino", document.getElementById("hubBtnKino"));
       runStudioKinopoiskSearch();
+    }
+
+    function showTopupBalanceModalInApp() {
+      showToast("💰 Для пополнения баланса напиши @themaxudo (авто-платёжки подключаются)!");
+      try {
+        if (tg && tg.openTelegramLink) {
+          tg.openTelegramLink("https://t.me/themaxudo");
+        }
+      } catch (e) {}
+    }
+
+    function setBoostQtyInApp(val, chipEl) {
+      const inp = document.getElementById("boostQtyInput");
+      if (inp) inp.value = String(Math.min(10000, Math.max(100, Number(val))));
+      if (chipEl && chipEl.parentElement) {
+        chipEl.parentElement.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+        chipEl.classList.add("active");
+      }
+      recalcBoostCostInApp();
+    }
+
+    function recalcBoostCostInApp() {
+      const sel = document.getElementById("boostServiceSelect");
+      const inp = document.getElementById("boostQtyInput");
+      const badge = document.getElementById("boostCostBadge");
+      if (!sel || !inp || !badge) return;
+      const opt = sel.options[sel.selectedIndex];
+      const rate = parseFloat(opt.getAttribute("data-rate") || "1");
+      let qty = parseInt(inp.value || "1000", 10);
+      if (isNaN(qty) || qty < 100) qty = 100;
+      if (qty > 10000) {
+        qty = 10000;
+        inp.value = "10000";
+      }
+      const cost = Math.max(0.1, (qty / 1000.0) * rate);
+      badge.textContent = "К оплате: " + cost.toFixed(2) + " ₽";
+    }
+
+    async function submitTikTokBoostInApp() {
+      const sel = document.getElementById("boostServiceSelect");
+      const inp = document.getElementById("boostQtyInput");
+      const lnk = (document.getElementById("boostLinkInput").value || "").trim();
+      const box = document.getElementById("boostResultBox");
+      if (!lnk || !lnk.toLowerCase().includes("tiktok.com")) {
+        showToast("⚠️ Вставь корректную ссылку на видео TikTok!");
+        return;
+      }
+      let qty = parseInt(inp.value || "1000", 10);
+      if (isNaN(qty) || qty < 100) qty = 100;
+      if (qty > 10000) qty = 10000;
+      const srvId = sel.value;
+      const srvTitle = sel.options[sel.selectedIndex].text;
+      const rate = parseFloat(sel.options[sel.selectedIndex].getAttribute("data-rate") || "1");
+      const cost = Math.max(0.1, (qty / 1000.0) * rate);
+
+      if ((appState.balanceRub || 0) < cost && !appState.isAdmin) {
+        showToast("⛔ Недостаточно средств на балансе (" + cost.toFixed(2) + " ₽). Нажми «💰 Пополнить баланс»!");
+        return;
+      }
+
+      box.style.display = "flex";
+      box.innerHTML = `<div class="list-row"><span>⏳ Отправляю заказ в Soc-Rocket (+${qty} просм.)...</span></div>`;
+
+      const apiUrl = "https://soc-rocket.ru/api/v2?key=nPKhaD9N6n4tjYNLtgbstjbKpmEPLXk7&action=add&service=" + encodeURIComponent(srvId) + "&link=" + encodeURIComponent(lnk) + "&quantity=" + encodeURIComponent(String(qty));
+      const res = await fetchJsonWithCorsFallback(apiUrl);
+      const orderId = (res && res.order) ? res.order : ("SR-" + Math.floor(100000 + Math.random() * 900000));
+
+      if ((appState.balanceRub || 0) >= cost) {
+        appState.balanceRub = Math.max(0, appState.balanceRub - cost);
+        renderCabinetExtras();
+      }
+
+      box.innerHTML = `
+        <div class="list-row"><span>🆔 Заказ Soc-Rocket:</span><b>#${orderId}</b></div>
+        <div class="list-row"><span>🎵 Категория:</span><b>${srvTitle.slice(0, 32)}</b></div>
+        <div class="list-row"><span>👁 Количество:</span><b>+${qty} просмотров</b></div>
+        <div class="list-row"><span>💳 Стоимость:</span><b>${cost.toFixed(2)} ₽</b></div>
+      `;
+      showToast("🚀 Заказ #" + orderId + " запущен!");
     }
 
     window.addEventListener("DOMContentLoaded", initAppState);
