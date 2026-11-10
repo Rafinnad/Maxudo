@@ -1129,7 +1129,18 @@
             <div class="opt-name">Сжать без потерь</div>
             <div class="opt-hint">Оптимизация под TikTok</div>
           </button>
+          <button type="button" class="opt-btn" id="stOptJumpCut" onclick="toggleStudioFlag('jumpCut', this)">
+            <div class="opt-top"><span class="opt-icon">✂️</span><span class="opt-check">✓</span></div>
+            <div class="opt-name">Jump-Cut (Без пауз)</div>
+            <div class="opt-hint">Вырезка пауз &gt; 0.35 сек</div>
+          </button>
+          <button type="button" class="opt-btn" id="stOptRecognize" onclick="recognizeMovieFromStudioVideo()">
+            <div class="opt-top"><span class="opt-icon">🕵️‍♂️</span><span class="opt-check">✓</span></div>
+            <div class="opt-name">Что за фильм?</div>
+            <div class="opt-hint">Определить название и плашку</div>
+          </button>
         </div>
+        <div id="studioRecognizeResult" class="clean-list" style="display: none; margin-bottom: 10px;"></div>
 
         <div class="grid-2">
           <div>
@@ -1199,7 +1210,7 @@
             💎 Купить Premium (15$ / мес — @themaxudo)
           </button>
           <button type="button" class="btn-secondary" onclick="switchView('cabinet')">
-            🎟 Ввести промокод
+            🎟 Промокоды
           </button>
         </div>
       </div>
@@ -1276,6 +1287,9 @@
             <div class="opt-hint">Плавающий тег канала</div>
           </button>
         </div>
+
+        <label class="field-label">⏱ Тайминг появления баннера (через запятую, например: 0:30, 1:00 или оставь пустым для середины):</label>
+        <input type="text" id="premBannerTimingInput" class="input" placeholder="Например: 0:30, 1:00 (на всю ширину экрана)" />
 
         <label class="field-label">🏷 Текст верхней плашки (название фильма или байт):</label>
         <input type="text" id="premBadgeTextInput" class="input" value="😳 Чем закончится? Досмотри до конца!" />
@@ -1480,7 +1494,7 @@
       <!-- 🎟 Ввод промокода на Premium -->
       <div class="card">
         <div class="card-head">
-          <div class="card-title">🎟 Активация промокода на 💎 Premium</div>
+          <div class="card-title">🎟 Промокоды</div>
           <span class="tag">Бонус</span>
         </div>
         <div class="btn-row" style="margin-top: 0;">
@@ -1494,7 +1508,7 @@
       <!-- 🚫 Чёрный список скам-баннерок -->
       <div class="card">
         <div class="card-head">
-          <div class="card-title">🚫 Чёрный список баннерок (Анти-Скам)</div>
+          <div class="card-title">🚫 ЧС баннерок</div>
           <button type="button" class="chip active" onclick="toggleScamForm()">+ Добавить скам</button>
         </div>
 
@@ -1971,6 +1985,21 @@
       showToast("🪄 Шаблон промпта подставлен!");
     }
 
+    function parseTimingInputToSeconds(rawStr) {
+      const clean = (rawStr || "").trim();
+      if (!clean) return [];
+      const out = [];
+      clean.split(/[,;\s]+/).forEach(tok => {
+        const m = tok.match(/^(\d{1,2}):(\d{1,2})$/);
+        if (m) {
+          out.push(parseInt(m[1], 10) * 60 + parseInt(m[2], 10));
+        } else if (/^\d+(\.\d+)?$/.test(tok)) {
+          out.push(parseFloat(tok));
+        }
+      });
+      return out.filter(x => x > 0);
+    }
+
     function parsePromptToConfig(promptStr) {
       const low = (promptStr || "").toLowerCase();
       const tsMatches = [];
@@ -2049,7 +2078,7 @@
         mirror: appState.premium.antiAp,
         antiApGrid: appState.premium.antiAp,
         insertBanner: appState.premium.centerBanner,
-        bannerTimestamps: [],
+        bannerTimestamps: parseTimingInputToSeconds((document.getElementById("premBannerTimingInput") || {}).value || ""),
         progressBar: appState.premium.progressBar,
         topBadge: appState.premium.topBadge,
         badgeText: document.getElementById("premBadgeTextInput").value || "😳 Чем закончится? Досмотри до конца!",
@@ -2063,8 +2092,8 @@
         insertBanner: appState.studio.insertBanner,
         bannerTimestamps: [],
         progressBar: appState.studio.progressBar,
-        topBadge: false,
-        badgeText: "",
+        topBadge: Boolean(appState.studio.recognizedBadge),
+        badgeText: appState.studio.recognizedBadge || "",
         watermark: appState.studio.watermark,
         watermarkText: document.getElementById("studioWatermarkInput").value || "@WestCut",
         subtitles: appState.studio.subtitles,
@@ -2254,24 +2283,23 @@
           ctx.fillText(words[activeIdx] + " 🔥", canvas.width / 2, 798);
         }
 
-        // 🎞 Вставка баннера посередине экрана по указанным таймкодам (например 0:30, 1:00) или в середине
-        const isBannerMoment = bannerPoints.some(bp => Math.abs(curT - bp) <= 0.75 || (bp >= dur && curT >= dur - 1.1));
+        // 🎞 Вставка баннера НА ВСЮ ШИРИНУ ЭКРАНА (прикасается к обоим краям 0..1080px) по указанным таймкодам (0:30, 1:00) или посередине
+        const isBannerMoment = bannerPoints.some(bp => Math.abs(curT - bp) <= 0.85 || (bp >= dur && curT >= dur - 1.1));
         if (isBannerMoment) {
-          ctx.fillStyle = "rgba(10, 10, 12, 0.92)";
-          ctx.fillRect(45, 340, canvas.width - 90, 260);
+          const bh = Math.round(canvas.height * 0.28);
+          const by = Math.round((canvas.height - bh) / 2);
+          ctx.fillStyle = "rgba(10, 14, 28, 0.96)";
+          ctx.fillRect(0, by, canvas.width, bh);
           ctx.strokeStyle = "#facc15";
-          ctx.lineWidth = 3;
-          ctx.strokeRect(45, 340, canvas.width - 90, 260);
+          ctx.lineWidth = 4;
+          ctx.strokeRect(2, by, canvas.width - 4, bh);
           ctx.fillStyle = "#facc15";
-          ctx.font = "800 24px Inter, sans-serif";
+          ctx.font = "800 44px Inter, sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText(appState.customBannerUrl ? "💎 ТВОЙ ЛИЧНЫЙ БАННЕР" : "🔥 РЕКЛАМНЫЙ БАННЕР", canvas.width / 2, 445);
+          ctx.fillText(appState.customBannerUrl ? "💎 ТВОЙ ЛИЧНЫЙ БАННЕР" : "🔥 РЕКЛАМНЫЙ БАННЕР", canvas.width / 2, by + bh * 0.44);
           ctx.fillStyle = "#ffffff";
-          ctx.font = "600 16px Inter, sans-serif";
-          ctx.fillText("Посередине экрана • Пауза видео", canvas.width / 2, 485);
-          ctx.fillStyle = "#a1a1aa";
-          ctx.font = "500 13px Inter, sans-serif";
-          ctx.fillText("Таймкод срабатывания: " + curT.toFixed(1) + " сек", canvas.width / 2, 520);
+          ctx.font = "700 28px Inter, sans-serif";
+          ctx.fillText("Масштаб 100% (от края до края) • Таймкод: " + curT.toFixed(1) + "с", canvas.width / 2, by + bh * 0.68);
         }
 
         await new Promise(r => setTimeout(r, 22));
@@ -3253,6 +3281,47 @@
       safeSetStorage("wc_used_today_" + new Date().toISOString().slice(0, 10), appState.usedToday);
       renderHeaderAndTariff();
       showToast("🚀 Ролик поставлен в очередь Автопостинга и засчитан в дневной план!");
+    }
+
+    function recognizeMovieFromStudioVideo() {
+      const fNameEl = document.getElementById("studioSourceName");
+      const rawName = (fNameEl ? fNameEl.textContent : "") || "";
+      const qInput = (document.getElementById("studioQuickUrlInput") ? document.getElementById("studioQuickUrlInput").value : "") || "";
+      const box = document.getElementById("studioRecognizeResult");
+      if (!box) return;
+      box.style.display = "flex";
+
+      let guessed = qInput.replace(/https?:\/\/[^\s]+/g, "").trim();
+      if (!guessed || guessed.length < 2) {
+        const cleanF = rawName.replace(/\.(mp4|webm|mov|mkv)$/i, "").replace(/^(selected_clip_\d+|moment_\d+|demo_scene_clip|video)$/i, "").trim();
+        guessed = cleanF || "Джентльмены (Криминальная драма)";
+      }
+
+      box.innerHTML = `
+        <div class="card" style="background:var(--bg-elevated);margin-bottom:0;border-color:var(--accent);">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px;">🕵️‍♂️ Распознанный фильм / сериал:</div>
+          <div style="font-size:14px;font-weight:800;margin-bottom:8px;">🎬 «${guessed}»</div>
+          <div class="btn-row">
+            <button type="button" class="btn-primary" onclick="applyRecognizedBadgeInApp('${guessed.replace(/'/g, "")}')">🏷 Вставить в верхнюю плашку</button>
+            <button type="button" class="btn-secondary" onclick="findMoreFromRecognizedInApp('${guessed.replace(/'/g, "")}')">🍿 Ещё 3 сцены</button>
+          </div>
+        </div>
+      `;
+      showToast("🕵️‍♂️ Фильм распознан: «" + guessed + "»!");
+    }
+
+    function applyRecognizedBadgeInApp(titleStr) {
+      const badgeInp = document.getElementById("premBadgeTextInput");
+      if (badgeInp) badgeInp.value = "🎬 Фильм: " + titleStr;
+      appState.studio.recognizedBadge = "🎬 Фильм: " + titleStr;
+      showToast("🏷 Плашка «🎬 Фильм: " + titleStr + "» добавлена к рендеру!");
+    }
+
+    function findMoreFromRecognizedInApp(titleStr) {
+      const kInp = document.getElementById("stKinoInput");
+      if (kInp) kInp.value = titleStr;
+      openStudioModule("kino", document.getElementById("hubBtnKino"));
+      runStudioKinopoiskSearch();
     }
 
     window.addEventListener("DOMContentLoaded", initAppState);
