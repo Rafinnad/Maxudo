@@ -1126,7 +1126,7 @@
             <div class="opt-name">Фоновая музыка</div>
             <div class="opt-hint">Трендовый бит с приглушением</div>
           </button>
-          <button type="button" class="opt-btn active" id="stOptEnhance" onclick="toggleStudioFlag('enhance1080', this)">
+          <button type="button" class="opt-btn active" id="stOptEnhance" style="display:none;" onclick="toggleStudioFlag('enhance1080', this)">
             <div class="opt-top"><span class="opt-icon">✨</span><span class="opt-check">✓</span></div>
             <div class="opt-name">Улучшить качество</div>
             <div class="opt-hint">Full HD 1080p + Чёткость</div>
@@ -1473,7 +1473,7 @@
       <!-- Карточка профиля -->
       <div class="card">
         <div class="card-head">
-          <div class="card-title">👤 Мой Кабинет</div>
+          <div class="card-title">👤 Личный Кабинет</div>
           <span class="tag" id="cabRoleBadge">Участник</span>
         </div>
         <div class="clean-list" style="margin-bottom: 12px;">
@@ -1595,7 +1595,7 @@
       <!-- 🛒 Магазин & 💰 Пополнение баланса ($) -->
       <div class="card" id="cabinetTopupCard">
         <div class="card-head">
-          <div class="card-title">🛒 Магазин ▸ 💰 Пополнить баланс ($)</div>
+          <div class="card-title">🛒 Магазин ▸ 💰 Пополнить баланс</div>
           <span class="tag">Stars &amp; Crypto</span>
         </div>
         <label class="field-label">1. Напиши сумму пополнения в долларах ($):</label>
@@ -1638,7 +1638,7 @@
       </button>
       <button type="button" class="nav-item" data-target="premium" onclick="switchView('premium')">
         <span class="nav-ic">💎</span>
-        <span>Premium Студия</span>
+        <span>Premium Доступ</span>
       </button>
       <button type="button" class="nav-item" data-target="moments" onclick="switchView('moments')">
         <span class="nav-ic">🔥</span>
@@ -1650,7 +1650,7 @@
       </button>
       <button type="button" class="nav-item" data-target="cabinet" onclick="switchView('cabinet')">
         <span class="nav-ic">👤</span>
-        <span>Кабинет</span>
+        <span>Личный Кабинет</span>
       </button>
     </div>
   </nav>
@@ -3265,7 +3265,7 @@
           <div class="card" style="background:var(--bg-elevated);margin-bottom:0;border-color:var(--danger);">
             <div style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:6px;">⚠️ Эта платформа пока не поддерживается!</div>
             <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">Обратитесь в поддержку (@themaxudo), чтобы мы добавили скачивание с этой платформы! Поддерживаются: YouTube, TikTok, Facebook, Instagram, VK, Rutube, Twitch, Kick, X, Reddit, Pinterest, Likee, OK.ru, Дзен.</div>
-            <button type="button" class="btn-secondary" onclick="openTelegramContact('themaxudo')">💬 Обратиться в поддержку</button>
+            <button type="button" class="btn-secondary" onclick="openTelegramContact('themaxudo')">💬 Связаться с поддержкой</button>
           </div>
         `;
         showToast("⚠️ Обратитесь в поддержку, чтобы добавили эту платформу!");
