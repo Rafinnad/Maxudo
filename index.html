@@ -910,24 +910,8 @@
             </div>
           </div>
 
-          <label class="field-label">Качество и формат:</label>
-          <div class="grid-2" style="margin-bottom: 10px;">
-            <button type="button" class="opt-btn active" onclick="selectSimpleCard(this, 'stDlQuality', '1080')">
-              <div class="opt-name">🎬 MP4 1080p</div>
-              <div class="opt-hint">Full HD (Рекомендуется)</div>
-            </button>
-            <button type="button" class="opt-btn" onclick="selectSimpleCard(this, 'stDlQuality', '720')">
-              <div class="opt-name">📹 MP4 720p</div>
-              <div class="opt-hint">HD Быстрая загрузка</div>
-            </button>
-            <button type="button" class="opt-btn" onclick="selectSimpleCard(this, 'stDlQuality', '480')">
-              <div class="opt-name">📱 MP4 480p</div>
-              <div class="opt-hint">Лёгкий размер</div>
-            </button>
-            <button type="button" class="opt-btn" onclick="selectSimpleCard(this, 'stDlQuality', 'mp3')">
-              <div class="opt-name">🎵 MP3 Звук</div>
-              <div class="opt-hint">Только аудиодорожка</div>
-            </button>
+          <div style="font-size: 11px; color: var(--accent); margin-bottom: 10px; font-weight: 600;">
+            ✨ Автоматически скачивает в максимальном оригинальном качестве (1080p Full HD)
           </div>
 
           <button type="button" class="btn-primary" onclick="runStudioDirectDownload()">
@@ -998,25 +982,25 @@
       <div id="studioModule-boost" class="studio-subpanel">
         <div class="card">
           <div class="card-head">
-            <div class="card-title">📈 Докрутка просмотров TikTok</div>
-            <span class="tag" id="boostCostBadge">К оплате: $7.00</span>
+            <div class="card-title">🛒 Магазин ▸ 📈 Накрутка TikTok</div>
+            <span class="tag" id="boostCostBadge">К оплате: $0.20</span>
           </div>
 
-          <label class="field-label">1. Выбери категорию накрутки (Soc-Rocket):</label>
+          <label class="field-label">1. Выбери тариф накрутки:</label>
           <select id="boostServiceSelect" class="select" onchange="recalcBoostCostInApp()">
-            <option value="410" data-rate="7">410. Просмотры - Быстрые - $7.00 / 1K ($0.70 за 100) ⚡️⚡️</option>
-            <option value="414" data-rate="21">414. Просмотры - Турбо - $21.00 / 1K ($2.10 за 100) ⚡️⚡️⚡️</option>
-            <option value="416" data-rate="49">416. Просмотры - Трендовые - $49.00 / 1K ($4.90 за 100) ⚡️⚡️</option>
-            <option value="418" data-rate="77">418. Просмотры - Живые - $77.00 / 1K ($7.70 за 100) ⚡️⚡️⭐️🆕</option>
+            <option value="410" data-rate="0.20">⚡ 410. Быстрые — $0.20 / 1K ⚡️⚡️</option>
+            <option value="414" data-rate="0.50">🚀 414. Турбо — $0.50 / 1K ⚡️⚡️⚡️</option>
+            <option value="416" data-rate="1.00">🔥 416. Трендовые — $1.00 / 1K ⚡️⚡️</option>
+            <option value="418" data-rate="1.50">⭐️ 418. Живые — $1.50 / 1K ⭐️🆕</option>
           </select>
 
-          <label class="field-label">2. Количество просмотров (максимум до 10 000):</label>
+          <label class="field-label">2. Количество просмотров (до 10 000):</label>
           <div class="chip-row" style="margin-bottom: 8px;">
-            <span class="chip" onclick="setBoostQtyInApp(100, this)">+100 просмотров</span>
-            <span class="chip" onclick="setBoostQtyInApp(500, this)">+500 просмотров</span>
-            <span class="chip active" onclick="setBoostQtyInApp(1000, this)">+1000 просмотров</span>
-            <span class="chip" onclick="setBoostQtyInApp(5000, this)">+5000 просмотров</span>
-            <span class="chip" onclick="setBoostQtyInApp(10000, this)">+10000 просмотров</span>
+            <span class="chip" onclick="setBoostQtyInApp(100, this)">+100</span>
+            <span class="chip" onclick="setBoostQtyInApp(500, this)">+500</span>
+            <span class="chip active" onclick="setBoostQtyInApp(1000, this)">+1K</span>
+            <span class="chip" onclick="setBoostQtyInApp(5000, this)">+5K</span>
+            <span class="chip" onclick="setBoostQtyInApp(10000, this)">+10K</span>
           </div>
           <input type="number" id="boostQtyInput" class="input" min="100" max="10000" step="100" value="1000" oninput="recalcBoostCostInApp()" placeholder="Введи число от 100 до 10000" />
 
@@ -1608,22 +1592,18 @@
         </div>
       </div>
 
-      <!-- 💰 Платёжные системы пополнения баланса ($) -->
+      <!-- 🛒 Магазин & 💰 Пополнение баланса ($) -->
       <div class="card" id="cabinetTopupCard">
         <div class="card-head">
-          <div class="card-title">💰 Пополнение баланса ($)</div>
-          <span class="tag">Авто-касса</span>
+          <div class="card-title">🛒 Магазин ▸ 💰 Пополнить баланс ($)</div>
+          <span class="tag">Stars &amp; Crypto</span>
         </div>
-        <label class="field-label">Сумма пополнения в долларах ($):</label>
-        <div class="chip-row" style="margin-bottom: 8px;">
-          <span class="chip" onclick="document.getElementById('topupUsdInput').value='5'">+$5</span>
-          <span class="chip" onclick="document.getElementById('topupUsdInput').value='10'">+$10</span>
-          <span class="chip active" onclick="document.getElementById('topupUsdInput').value='15'">+$15 (На 💎 Premium)</span>
-          <span class="chip" onclick="document.getElementById('topupUsdInput').value='25'">+$25</span>
-          <span class="chip" onclick="document.getElementById('topupUsdInput').value='50'">+$50</span>
-        </div>
-        <input type="number" id="topupUsdInput" class="input" min="1" max="5000" value="15" placeholder="Сумма в $" />
-        <label class="field-label">Выбери способ оплаты:</label>
+        <label class="field-label">1. Напиши сумму пополнения в долларах ($):</label>
+        <input type="number" id="topupUsdInput" class="input" min="1" max="5000" placeholder="Введите сумму в долларах (например: 5 или 15)" />
+        <label class="field-label">2. Выбери платёжную систему:</label>
+        <button type="button" class="btn-primary" style="margin-bottom: 8px;" onclick="selectTopupGatewayInApp('Telegram Stars', this)">
+          ⭐️ Пополнить за Telegram Stars (Звёзды ТГ)
+        </button>
         <div class="grid-2" style="margin-bottom: 8px;">
           <button type="button" class="opt-btn active" onclick="selectTopupGatewayInApp('Heleket', this)">
             <div class="opt-name">⚡️ Heleket</div>
@@ -1658,7 +1638,7 @@
       </button>
       <button type="button" class="nav-item" data-target="premium" onclick="switchView('premium')">
         <span class="nav-ic">💎</span>
-        <span>Premium</span>
+        <span>Premium Студия</span>
       </button>
       <button type="button" class="nav-item" data-target="moments" onclick="switchView('moments')">
         <span class="nav-ic">🔥</span>
@@ -3471,7 +3451,7 @@
         qty = 10000;
         inp.value = "10000";
       }
-      const cost = Math.max(0.10, (qty / 1000.0) * rate);
+      const cost = Math.max(0.01, (qty / 1000.0) * rate);
       badge.textContent = "К оплате: $" + cost.toFixed(2);
     }
 
@@ -3490,7 +3470,7 @@
       const srvId = sel.value;
       const srvTitle = sel.options[sel.selectedIndex].text;
       const rate = parseFloat(sel.options[sel.selectedIndex].getAttribute("data-rate") || "7");
-      const cost = Math.max(0.10, (qty / 1000.0) * rate);
+      const cost = Math.max(0.01, (qty / 1000.0) * rate);
 
       // Строгая проверка баланса $ для всех (бесплатно крутить нельзя!)
       if (Number(appState.balanceRub || 0) < cost) {
