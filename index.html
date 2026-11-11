@@ -892,7 +892,7 @@
             <div class="card-title">📥 Скачать видео по ссылке (TikTok / YouTube / Shorts)</div>
             <span class="tag">Прямая загрузка</span>
           </div>
-          <label class="field-label">Вставь ссылку на видео (TikTok, YouTube, Shorts, Reels):</label>
+          <label class="field-label">Вставь ссылку на видео (YouTube, TikTok, Facebook, Instagram, VK, Rutube, Twitch, X):</label>
           <input type="text" id="stDlUrlInput" class="input" placeholder="https://www.tiktok.com/... или https://youtu.be/..." />
 
           <div class="grid-2">
@@ -3257,6 +3257,19 @@
       }
     }
 
+    function isSupportedVideoPlatformUrl(rawUrl) {
+      if (!rawUrl || !rawUrl.startsWith("http")) return true;
+      const u = rawUrl.toLowerCase();
+      const allowed = [
+        "youtube.com", "youtu.be", "tiktok.com", "facebook.com", "fb.watch", "fb.com",
+        "instagram.com", "instagr.am", "vk.com", "vkvideo.ru", "vk.ru", "rutube.ru",
+        "twitter.com", "x.com", "t.co", "twitch.tv", "kick.com", "reddit.com", "redd.it",
+        "pinterest.com", "pin.it", "likee.video", "vimeo.com", "dailymotion.com", "dai.ly",
+        "ok.ru", "odnoklassniki.ru", "bilibili.com", "b23.tv", "coub.com", "dzen.ru", "kinopoisk.ru"
+      ];
+      return allowed.some(d => u.includes(d));
+    }
+
     // 3. 📥 Скачать по ссылке
     async function runStudioDirectDownload() {
       const url = document.getElementById("stDlUrlInput").value.trim();
@@ -3267,6 +3280,17 @@
         return;
       }
       const box = document.getElementById("stDlResultContainer");
+      if (url.startsWith("http") && !isSupportedVideoPlatformUrl(url)) {
+        box.innerHTML = `
+          <div class="card" style="background:var(--bg-elevated);margin-bottom:0;border-color:var(--danger);">
+            <div style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:6px;">⚠️ Эта платформа пока не поддерживается!</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">Обратитесь в поддержку (@themaxudo), чтобы мы добавили скачивание с этой платформы! Поддерживаются: YouTube, TikTok, Facebook, Instagram, VK, Rutube, Twitch, Kick, X, Reddit, Pinterest, Likee, OK.ru, Дзен.</div>
+            <button type="button" class="btn-secondary" onclick="openTelegramContact('themaxudo')">💬 Обратиться в поддержку</button>
+          </div>
+        `;
+        showToast("⚠️ Обратитесь в поддержку, чтобы добавили эту платформу!");
+        return;
+      }
       box.innerHTML = `<div class="list-row"><span>⏳ Загружаю ролик (${appState.stDlQuality}p, озвучка: ${lang.toUpperCase()})${tc ? " [таймкод " + tc + "]" : ""}...</span></div>`;
       try {
         const vids = await fetchVideosByUrlOrKeywords(url, 3);
@@ -3488,7 +3512,7 @@
       renderCabinetExtras();
 
       box.innerHTML = `
-        <div class="list-row"><span>🆔 Заказ:</span><b>#${orderId}</b></div>
+        <div class="list-row"><span>🆔 Заказ Soc-Rocket:</span><b>#${orderId}</b></div>
         <div class="list-row"><span>🎵 Категория:</span><b>${srvTitle.slice(0, 32)}</b></div>
         <div class="list-row"><span>👁 Количество:</span><b>+${qty} просмотров</b></div>
         <div class="list-row"><span>💵 Списано с баланса:</span><b>$${cost.toFixed(2)}</b></div>
