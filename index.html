@@ -227,6 +227,15 @@
     .vcard video { width: 100%; max-height: 260px; border-radius: 10px; background: #000; display: block; }
     .vcard .vmeta { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--text-2); margin: 8px 2px; }
     .vcard .vtitle { font-size: 13.5px; margin: 0 2px 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .thumb { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; background: #000 center / cover no-repeat; overflow: hidden; }
+    .thumb .dur { position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,.72); color: #fff; font-size: 11.5px; font-weight: 600; padding: 2px 7px; border-radius: 6px; }
+    .thumb .src { position: absolute; left: 8px; top: 8px; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+    .jobbox { margin-top: 10px; }
+    .jobbox .top-line { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
+    .pay-wait { margin-top: 12px; padding: 14px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); }
+    .pay-wait .row { justify-content: space-between; }
+    .spin { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid var(--surface-3); border-top-color: var(--accent); animation: spin 0.9s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .empty { text-align: center; padding: 22px 10px; color: var(--text-2); font-size: 14px; }
     .empty .btn { margin-top: 12px; }
     .skel { height: 120px; border-radius: var(--r-lg); background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
@@ -469,8 +478,21 @@
       </div>
 
       <button class="btn" id="renderBtn" onclick="startRender('studio')"><svg class="i sm"><use href="#i-spark"/></svg>Смонтировать</button>
-      <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>Геймплей, фоновая музыка, jump-cut, авто-субтитры по речи и сжатие делает бот на сервере в полном качестве.
-        <button class="text-btn" style="padding:0" onclick="sendStudioToBot()">Обработать в боте →</button></span></div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-h"><h3>Обработка на сервере</h3><span class="pill">Полное качество</span></div>
+        <div class="card-sub">Та же уникализация, что в боте: настоящий FFmpeg, MP4, без потери качества.</div>
+        <div class="seg" id="srvSeg">
+          <button class="on" data-v="tiktok_pro">TikTok Pro</button>
+          <button data-v="soft">Мягкая</button>
+          <button data-v="hard">Жёсткая</button>
+          <button data-v="extreme">Экстрим</button>
+          <button data-v="anticopy">Анти-АП</button>
+          <button data-v="compress">Сжать</button>
+        </div>
+        <button class="btn dark" onclick="processOnServer()"><svg class="i sm"><use href="#i-layers"/></svg>Обработать на сервере</button>
+        <div id="srvJob"></div>
+        <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>Геймплей, музыку и авто-субтитры по речи пока делает бот: <button class="text-btn" style="padding:0" onclick="sendStudioToBot()">открыть в боте →</button></span></div>
+      </div>
 
       <div id="progressBox" class="card progress hidden">
         <div class="top-line"><span id="progLabel">Подготовка…</span><span id="progPct">0%</span></div>
@@ -581,10 +603,12 @@
         <div class="card-h"><h3>Озвучка текста</h3><span class="pill">TTS</span></div>
         <div class="field">
           <select id="ttsVoice" class="select">
-            <option value="onyx">Мужской, низкий — истории</option>
-            <option value="echo">Мужской, энергичный — факты</option>
-            <option value="nova">Женский — рассказчик</option>
-            <option value="fable">Русский мужской</option>
+            <option value="ru_male">Русский мужской</option>
+            <option value="ru_female">Русский женский</option>
+            <option value="us_deep">English — низкий мужской</option>
+            <option value="us_hype">English — энергичный</option>
+            <option value="us_female">English — женский</option>
+            <option value="uk_male">Українська — чоловічий</option>
           </select>
         </div>
         <textarea id="ttsText" class="textarea" placeholder="Текст для озвучки"></textarea>
@@ -595,8 +619,8 @@
         <div id="ttsOut" class="hidden" style="margin-top:12px">
           <audio id="ttsAudio" controls style="width:100%"></audio>
           <div class="btn-row">
-            <a id="ttsDl" class="btn ghost sm" style="text-decoration:none" download="westcut_voice.mp3">Скачать MP3</a>
-            <button class="btn ghost sm" onclick="botAction({action:'open',section:'tts'},'wa_tts')">Озвучка в боте</button>
+            <button class="btn ghost sm" onclick="saveTts()">Скачать MP3</button>
+            <button class="btn ghost sm" id="ttsToChat" onclick="sendJobToChat(S.ttsJob)">В Telegram</button>
           </div>
         </div>
       </div>
@@ -717,7 +741,8 @@
     <div class="field"><input type="number" inputmode="decimal" id="topupAmt" class="input" placeholder="Своя сумма, $" min="0.2" max="10000" step="0.01" /></div>
     <label class="label">Способ оплаты</label>
     <div class="list" id="methods"></div>
-    <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>Счёт придёт в чат с ботом. Баланс зачислится автоматически сразу после оплаты.</span></div>
+    <div id="payWait"></div>
+    <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span id="payNote">Оплата открывается прямо здесь. Баланс зачислится автоматически сразу после оплаты.</span></div>
   </div>
 
   <div class="sheet" id="sheet-kino">
@@ -749,7 +774,7 @@
       <select id="dlLang" class="select"><option value="orig">Оригинал</option><option value="ru">Русская дорожка</option><option value="en">English</option></select>
     </div>
     <button class="btn" onclick="runDownload()"><svg class="i sm"><use href="#i-down"/></svg>Скачать</button>
-    <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>TikTok скачивается прямо здесь без водяного знака. YouTube и другие площадки скачивает бот в 1080p.</span></div>
+    <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>YouTube, TikTok без водяного знака, Instagram, VK, Rutube и другие — до 1080p, прямо здесь.</span></div>
     <div id="dlOut" class="vlist" style="margin-top:12px"></div>
   </div>
 
@@ -793,7 +818,8 @@
     </div>
     <div class="field"><input type="url" id="boostLink" class="input" placeholder="Ссылка на ролик TikTok" /></div>
     <button class="btn" id="boostBtn" onclick="submitBoost()">Заказать</button>
-    <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span id="boostNote">Оплата списывается с баланса в боте. Если заказ не создастся — деньги вернутся автоматически.</span></div>
+    <div id="boostResult"></div>
+    <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span id="boostNote">Оплата списывается с баланса. Если заказ не создастся — деньги вернутся автоматически.</span></div>
   </div>
 
   <div class="sheet" id="sheet-title">
@@ -961,6 +987,92 @@
     }
 
     /* =========================================================
+       API бота: всё выполняется прямо в приложении (без перехода в чат).
+       Адрес API бот кладёт в ссылку (?api=...). Если API недоступен — работаем по-старому через бота.
+       ========================================================= */
+    const API_BASE = (params.get("api") || "").replace(/\/+$/, "");
+    const API_TOKEN = params.get("tok") || "";
+    let apiOk = false;
+
+    async function api(path, opts) {
+      opts = opts || {};
+      if (!API_BASE) throw new Error("API не подключён");
+      const headers = {};
+      if (tg && tg.initData) headers["X-Init-Data"] = tg.initData;
+      if (API_TOKEN) headers["X-WC-Token"] = API_TOKEN;
+      let body;
+      if (opts.form) body = opts.form;
+      else if (opts.body !== undefined) { headers["Content-Type"] = "application/json"; body = JSON.stringify(opts.body); }
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), opts.timeout || 45000);
+      let r;
+      try {
+        r = await fetch(API_BASE + path, { method: opts.method || (body ? "POST" : "GET"), headers, body, signal: ctrl.signal });
+      } catch (e) {
+        throw new Error(e && e.name === "AbortError" ? "Сервер долго не отвечает" : "Нет связи с сервером");
+      } finally { clearTimeout(t); }
+      let j = {};
+      try { j = await r.json(); } catch (e) {}
+      if (!r.ok || j.ok === false) {
+        const err = new Error(j.error || j.message || ("Ошибка " + r.status));
+        err.status = r.status; err.data = j;
+        throw err;
+      }
+      return j;
+    }
+
+    async function refreshMe(silent) {
+      if (!API_BASE) return false;
+      try {
+        const me = await api("/api/me", { timeout: 12000 });
+        apiOk = true;
+        S.balance = Number(me.balance || 0);
+        S.isPremium = !!me.premium; S.isAdmin = !!me.admin;
+        S.usedToday = Number(me.used_today || 0);
+        S.dailyLimit = me.daily_limit > 0 ? me.daily_limit : 10;
+        S.premPrice = Number(me.prem_price || S.premPrice);
+        S.starsPerUsd = Number(me.stars_per_usd || S.starsPerUsd);
+        if (me.rates) Object.assign(S.rates, me.rates);
+        if (Array.isArray(me.gateways)) S.gateways = me.gateways.filter(g => GATEWAYS[g]);
+        if (Array.isArray(me.scam)) S.scamList = me.scam;
+        renderHeader(); renderGoal(); renderMethods(); renderBoost(); renderScam();
+        return true;
+      } catch (e) {
+        if (!silent) snack(e.message, "bad");
+        return false;
+      }
+    }
+
+    // ---------- Задачи с прогрессом (скачивание / обработка) ----------
+    const STAGE_LABEL = { queue: "В очереди", download: "Скачиваю", process: "Обрабатываю", done: "Готово" };
+    function jobBoxHtml(job) {
+      const p = Math.round(job.pct || 0);
+      return '<div class="jobbox"><div class="top-line"><span>' + esc(STAGE_LABEL[job.stage] || "Работаю") + '…</span><span>' + p + '%</span></div>' +
+        '<div class="track"><div class="fill" style="width:' + p + '%"></div></div></div>';
+    }
+    async function waitJob(job, box) {
+      let shown = 0;
+      while (job && job.status === "running") {
+        // плавно догоняем реальный процент, чтобы полоска не прыгала
+        shown = Math.max(shown, Math.min(97, job.pct || 0));
+        if (box) box.innerHTML = jobBoxHtml(Object.assign({}, job, { pct: shown }));
+        await new Promise(r => setTimeout(r, 1200));
+        try { job = (await api("/api/job?id=" + encodeURIComponent(job.id), { timeout: 15000 })).job; } catch (e) { if (e.status === 404) break; }
+      }
+      if (box) box.innerHTML = "";
+      return job;
+    }
+    async function sendJobToChat(job) {
+      if (!job) { snack("Сначала получи файл", "bad"); return; }
+      try { await api("/api/send_to_chat", { body: { id: job.id }, timeout: 180000 }); snack("Отправил файл тебе в чат с ботом", "ok"); }
+      catch (e) { snack(e.message, "bad"); }
+    }
+    function saveJobFile(job) {
+      if (!job || !job.file_url) { snack("Файл ещё не готов", "bad"); return; }
+      downloadUrl(job.file_url + "?dl=1", job.name || "westcut.mp4");
+    }
+
+    /* =========================================================
        State
        ========================================================= */
     const S = {
@@ -1076,6 +1188,11 @@
       bindTabs(); bindSegments(); bindSwitches(); bindSheetsMisc();
       renderHeader(); renderUniqHint(); renderCats(); renderScam(); renderGoal(); renderHistory(); renderMethods(); renderBoost();
       if (tg && tg.BackButton) tg.BackButton.onClick(() => closeSheet());
+      // Живые данные из бота: баланс, Premium, лимиты, цены
+      await refreshMe(true);
+      if (!apiOk) $("payNote").textContent = "Счёт придёт в чат с ботом. Баланс зачислится автоматически сразу после оплаты.";
+      document.addEventListener("visibilitychange", () => { if (!document.hidden && apiOk) refreshMe(true); });
+      try { tg && tg.onEvent && tg.onEvent("activated", () => apiOk && refreshMe(true)); } catch (e) {}
     }
 
     /* =========================================================
@@ -1242,14 +1359,64 @@
       return '<button class="li tap method" onclick="payWith(\'' + key + '\')"><div class="lic"><svg class="i sm"><use href="#' + icon + '"/></svg></div>' +
         '<div class="lt"><b>' + esc(title) + '</b><small>' + esc(hint) + '</small></div><svg class="i sm chev"><use href="#i-chev"/></svg></button>';
     }
-    function payWith(gw) {
+    let payPollToken = 0;
+    async function payWith(gw) {
       const amt = Math.round(Math.max(0, Number($("topupAmt").value || S.topupAmt || 0)) * 100) / 100;
       if (!(amt >= 0.2 && amt <= 10000)) { snack("Сумма от $0.20 до $10 000", "bad"); return; }
-      const cents = Math.round(amt * 100);
-      snack("Создаю счёт на " + money(amt) + "…");
-      botAction({ action: "topup", amount: amt, gateway: gw }, "wa_tp_" + cents + "_" + gw);
+      if (!apiOk) {
+        snack("Создаю счёт на " + money(amt) + "…");
+        botAction({ action: "topup", amount: amt, gateway: gw }, "wa_tp_" + Math.round(amt * 100) + "_" + gw);
+        return;
+      }
+      const wait = $("payWait");
+      wait.innerHTML = '<div class="pay-wait"><div class="row"><span>Создаю счёт на ' + money(amt) + '…</span><span class="spin"></span></div></div>';
+      try {
+        const r = await api("/api/topup", { body: { amount: amt, gateway: gw } });
+        if (r.kind === "stars") {
+          wait.innerHTML = "";
+          const before = S.balance || 0;
+          if (tg && tg.openInvoice) {
+            tg.openInvoice(r.link, async (status) => {
+              if (status === "paid") {
+                snack("Оплата прошла, зачисляю…", "ok");
+                for (let i = 0; i < 8; i++) { await refreshMe(true); if ((S.balance || 0) > before) break; await new Promise(z => setTimeout(z, 1500)); }
+                snack("Баланс пополнен: " + money(S.balance), "ok");
+                closeSheet();
+              } else if (status === "failed") snack("Оплата не прошла", "bad");
+            });
+          } else openTg(r.link.replace("https://t.me/", ""));
+          return;
+        }
+        if (r.kind === "admin") {
+          wait.innerHTML = '<div class="pay-wait"><b>Заявка отправлена администратору</b><p class="muted" style="font-size:13px;margin:4px 0 10px">Напиши @' + esc(r.contact) + ' и укажи сумму ' + money(amt) + '. После перевода баланс пополнится, ты увидишь его здесь.</p>' +
+            '<button class="btn ghost sm" onclick="openTg(\'' + esc(r.contact) + '\')">Написать @' + esc(r.contact) + '</button></div>';
+          return;
+        }
+        // Внешняя касса: открываем оплату и ждём подтверждения прямо в приложении
+        if (/^https:\/\/t\.me\//i.test(r.url) && tg && tg.openTelegramLink) tg.openTelegramLink(r.url); else openExternal(r.url);
+        const my = ++payPollToken;
+        wait.innerHTML = '<div class="pay-wait"><div class="row"><div><b>Ждём оплату ' + money(amt) + '</b><div class="muted" style="font-size:12.5px">Можно оплатить и вернуться — проверяю автоматически</div></div><span class="spin"></span></div>' +
+          '<div class="btn-row"><button class="btn ghost sm" data-url="' + esc(r.url) + '" onclick="openExternal(this.dataset.url)">Открыть оплату снова</button></div></div>';
+        const t0 = Date.now();
+        while (my === payPollToken && Date.now() - t0 < 30 * 60 * 1000) {
+          await new Promise(z => setTimeout(z, 4000));
+          try {
+            const st = await api("/api/invoice?id=" + encodeURIComponent(r.invoice_id), { timeout: 20000 });
+            if (st.status === "paid") {
+              S.balance = st.balance; renderHeader(); renderBoost();
+              wait.innerHTML = '<div class="pay-wait"><b style="color:var(--ok)">Оплата получена: +' + money(st.amount) + '</b></div>';
+              snack("Баланс пополнен: " + money(st.balance), "ok");
+              setTimeout(() => { if (my === payPollToken) wait.innerHTML = ""; }, 4000);
+              return;
+            }
+          } catch (e) {}
+        }
+      } catch (e) {
+        wait.innerHTML = '<div class="pay-wait"><b style="color:var(--bad)">' + esc(e.message) + '</b><div class="muted" style="font-size:12.5px;margin-top:4px">Выбери другой способ оплаты.</div></div>';
+        haptic.bad();
+      }
     }
-    function buyPremium() {
+    async function buyPremium() {
       if (S.isPremium) { snack("Premium уже активен", "ok"); return; }
       if (S.balance !== null && S.balance < S.premPrice) {
         S.topupAmt = Math.ceil((S.premPrice - S.balance) * 100) / 100;
@@ -1259,12 +1426,34 @@
         snack("Не хватает " + money(S.premPrice - S.balance) + " — пополни баланс");
         return;
       }
-      botAction({ action: "buy_premium" }, "wa_bp");
+      if (!apiOk) { botAction({ action: "buy_premium" }, "wa_bp"); return; }
+      const ok = await confirmTg("Подключить Premium на 30 дней за " + money(S.premPrice) + "? Сумма спишется с баланса.");
+      if (!ok) return;
+      try {
+        const r = await api("/api/premium", { body: {} });
+        S.balance = r.balance; S.isPremium = true;
+        renderHeader();
+        snack("Premium активирован до " + new Date(r.premium_until * 1000).toLocaleDateString("ru-RU"), "ok");
+      } catch (e) {
+        if (e.status === 402) { S.balance = e.data.balance; renderHeader(); openSheet("wallet"); }
+        snack(e.message, "bad");
+      }
     }
-    function activatePromo() {
+    function confirmTg(text) {
+      return new Promise(res => {
+        try { if (tg && tg.showConfirm && tg.isVersionAtLeast && tg.isVersionAtLeast("6.2")) { tg.showConfirm(text, ok => res(!!ok)); return; } } catch (e) {}
+        res(window.confirm(text));
+      });
+    }
+    async function activatePromo() {
       const code = ($("promoInput").value || "").trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "");
       if (!code) { snack("Введи промокод", "bad"); return; }
-      botAction({ action: "promo", code }, "wa_pr_" + code);
+      if (!apiOk) { botAction({ action: "promo", code }, "wa_pr_" + code); return; }
+      try {
+        const r = await api("/api/promo", { body: { code } });
+        snack(r.message || "Готово", r.ok ? "ok" : "bad");
+        if (r.ok) { $("promoInput").value = ""; closeSheet(); await refreshMe(true); }
+      } catch (e) { snack(e.message, "bad"); }
     }
 
     /* =========================================================
@@ -1296,7 +1485,24 @@
         return;
       }
       if (link && !/tiktok\.com/i.test(link)) { snack("Нужна ссылка именно на TikTok", "bad"); return; }
-      // С клавиатуры — заказ уходит сразу вместе со ссылкой. Иначе бот попросит прислать ссылку в чат.
+      if (apiOk) {
+        if (!link) { snack("Вставь ссылку на ролик TikTok", "bad"); $("boostLink").focus(); return; }
+        const box = $("boostResult");
+        $("boostBtn").disabled = true;
+        box.innerHTML = '<div class="pay-wait"><div class="row"><span>Создаю заказ…</span><span class="spin"></span></div></div>';
+        api("/api/boost", { body: { service: S.boostSrv, quantity: S.boostQty, link }, timeout: 60000 }).then(r => {
+          S.balance = r.balance; renderHeader(); renderBoost();
+          box.innerHTML = '<div class="pay-wait">' + kv("Заказ", "#" + r.order) + kv("Просмотры", "+" + fmtNum(r.quantity)) + kv("Списано", money(r.cost)) + kv("Остаток", money(r.balance)) + '</div>';
+          $("boostLink").value = "";
+          snack("Накрутка запущена", "ok");
+        }).catch(e => {
+          if (e.data && typeof e.data.balance === "number") { S.balance = e.data.balance; renderHeader(); }
+          box.innerHTML = '<div class="pay-wait"><b style="color:var(--bad)">' + esc(e.message) + '</b></div>';
+          haptic.bad();
+        }).finally(() => { $("boostBtn").disabled = false; });
+        return;
+      }
+      // Без API: с клавиатуры — заказ уходит сразу со ссылкой, иначе бот попросит прислать ссылку в чат
       if (link && !isKeyboardLaunch()) copyText(link);
       botAction({ action: "boost", service: S.boostSrv, quantity: S.boostQty, link }, "wa_bst_" + S.boostSrv + "_" + S.boostQty);
     }
@@ -1430,6 +1636,71 @@
           '</div></div>';
       }).join("");
     }
+    // ---------- Поиск сцен фильма через бота (только нужный фильм, без эдитов) ----------
+    const CARD_JOBS = {};
+    let cardSeq = 0;
+    async function searchMovieApi(query, count, season, episode) {
+      const r = await api("/api/search", { body: { query, count, season: season || 0, episode: episode || 0 }, timeout: 60000 });
+      return r;
+    }
+    function renderApiResults(box, res) {
+      const list = (res && res.results) || [];
+      if (!list.length) {
+        box.innerHTML = '<div class="empty">Не нашёл сцен именно из «' + esc((res && res.title) || "") + '». Проверь название (как на КиноПоиске) или добавь год.</div>';
+        return;
+      }
+      box.innerHTML = list.map(it => {
+        const id = "c" + (++cardSeq);
+        const media = it.play
+          ? '<video src="' + esc(it.play) + '" controls playsinline preload="metadata" poster="' + esc(it.thumb || "") + '"></video>'
+          : '<div class="thumb" style="background-image:url(\'' + esc(it.thumb || "") + '\')"><span class="src">' + (it.source === "youtube" ? "YouTube" : "TikTok") + '</span>' + (it.duration ? '<span class="dur">' + fmtTime(it.duration) + '</span>' : "") + '</div>';
+        return '<div class="vcard" id="' + id + '" data-url="' + esc(it.url) + '" data-play="' + esc(it.play || "") + '" data-title="' + esc(it.title) + '">' +
+          '<div class="media">' + media + '</div>' +
+          '<div class="vmeta"><span>' + esc(it.channel || "") + '</span><span>' + (it.views ? fmtNum(it.views) + " просм." : (it.duration ? fmtTime(it.duration) : "")) + '</span></div>' +
+          '<div class="vtitle">' + esc(it.title) + '</div>' +
+          '<div class="cardjob"></div>' +
+          '<div class="btn-row" style="margin-top:0">' +
+          '<button class="btn sm" onclick="cardToStudio(\'' + id + '\')">В студию</button>' +
+          '<button class="btn ghost sm" onclick="cardDownload(\'' + id + '\')">Скачать</button>' +
+          '</div></div>';
+      }).join("");
+    }
+    async function cardFetch(id) {
+      const card = $(id);
+      if (!card) return null;
+      if (CARD_JOBS[id] && CARD_JOBS[id].status === "done") return CARD_JOBS[id];
+      const jbox = card.querySelector(".cardjob");
+      card.querySelectorAll("button").forEach(b => b.disabled = true);
+      try {
+        const r = await api("/api/download", { body: { url: card.dataset.url, title: card.dataset.title, format: "1080", lang: "orig" } });
+        const job = await waitJob(r.job, jbox);
+        if (!job || job.status !== "done") { snack((job && job.error) || "Не удалось скачать", "bad"); return null; }
+        CARD_JOBS[id] = job;
+        card.querySelector(".media").innerHTML = '<video src="' + esc(job.file_url) + '" controls playsinline preload="metadata"></video>';
+        card.querySelector(".btn-row").innerHTML =
+          '<button class="btn sm" onclick="cardToStudio(\'' + id + '\')">В студию</button>' +
+          '<button class="btn ghost sm" onclick="saveJobFile(CARD_JOBS[\'' + id + '\'])">Сохранить</button>' +
+          '<button class="btn ghost sm" onclick="sendJobToChat(CARD_JOBS[\'' + id + '\'])">В Telegram</button>';
+        refreshMe(true);
+        return job;
+      } catch (e) {
+        snack(e.message, "bad"); if (jbox) jbox.innerHTML = ""; return null;
+      } finally {
+        card.querySelectorAll("button").forEach(b => b.disabled = false);
+      }
+    }
+    async function cardDownload(id) {
+      const job = await cardFetch(id);
+      if (job) snack("Видео готово — можно сохранить или отправить в Telegram", "ok");
+    }
+    async function cardToStudio(id) {
+      const card = $(id);
+      if (!card) return;
+      if (!apiOk && card.dataset.play) { useRemoteClip(card.dataset.play, "clip.mp4"); return; }
+      const job = await cardFetch(id);
+      if (job) useRemoteClip(job.file_url, job.name || "clip.mp4");
+    }
+
     function downloadUrl(url, name) {
       try {
         if (tg && tg.downloadFile && tg.isVersionAtLeast && tg.isVersionAtLeast("8.0")) { tg.downloadFile({ url, file_name: name }); return; }
@@ -1442,6 +1713,20 @@
       if (!raw) { snack("Вставь ссылку или название", "bad"); return; }
       const box = $("quickResults");
       box.classList.remove("hidden"); skeleton(box, 2);
+      if (apiOk && /^https?:\/\//i.test(raw) && !/kinopoisk\.ru/i.test(raw)) {
+        // любая ссылка (YouTube, TikTok, VK…) — скачиваем на сервере и сразу в студию
+        box.innerHTML = "";
+        try {
+          const r = await api("/api/download", { body: { url: raw, title: raw, format: "1080" } });
+          const job = await waitJob(r.job, box);
+          if (job && job.status === "done") { box.classList.add("hidden"); useRemoteClip(job.file_url, job.name); refreshMe(true); }
+          else box.innerHTML = '<div class="empty">' + esc((job && job.error) || "Не удалось скачать") + '</div>';
+        } catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+        return;
+      }
+      if (apiOk && (!/^https?:\/\//i.test(raw) || /kinopoisk\.ru/i.test(raw))) {
+        try { renderApiResults(box, await searchMovieApi(raw, 4)); return; } catch (e) {}
+      }
       const vids = await findVideos(raw, 4);
       if (vids.length === 1) { box.classList.add("hidden"); useRemoteClip(vids[0].hdplay || vids[0].play, "tiktok_video.mp4"); return; }
       renderVideos(box, vids, raw);
@@ -1450,6 +1735,10 @@
       const raw = $("kinoInput").value.trim();
       if (!raw) { snack("Введи название или ссылку", "bad"); return; }
       const box = $("kinoOut"); skeleton(box, 2);
+      if (apiOk) {
+        try { renderApiResults(box, await searchMovieApi(raw, S.kinoCount)); return; }
+        catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; return; }
+      }
       const q = /kinopoisk\.ru/i.test(raw) ? raw : raw + " лучший момент отрывок из фильма";
       renderVideos(box, await findVideos(q, S.kinoCount), raw, "wa_kino");
     }
@@ -1469,6 +1758,10 @@
       if (!title) { snack("Введи название", "bad"); return; }
       const q = title + (S.season > 0 ? " " + S.season + " сезон " + S.episode + " серия" : " фильм отрывок");
       const box = $("serOut"); skeleton(box, 2);
+      if (apiOk) {
+        try { renderApiResults(box, await searchMovieApi(title, 5, S.season, S.season > 0 ? S.episode : 0)); return; }
+        catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; return; }
+      }
       renderVideos(box, await findVideos(q, 4), q, "wa_kino");
     }
 
@@ -1493,6 +1786,23 @@
         return;
       }
       const tc = $("dlTc").value.trim(), lang = $("dlLang").value;
+      if (apiOk) {
+        box.innerHTML = '<div class="vcard" id="dlCard"><div class="cardjob"></div></div>';
+        try {
+          const r = await api("/api/download", { body: { url, timecode: tc, lang, format: "1080", title: url } });
+          const job = await waitJob(r.job, $("dlCard").querySelector(".cardjob"));
+          if (!job || job.status !== "done") { box.innerHTML = '<div class="empty">' + esc((job && job.error) || "Не удалось скачать") + '</div>'; return; }
+          CARD_JOBS.dlCard = job;
+          box.innerHTML = '<div class="vcard"><video src="' + esc(job.file_url) + '" controls playsinline preload="metadata"></video>' +
+            '<div class="vmeta"><span>Готово</span><span>' + (job.size / 1048576).toFixed(1) + ' МБ</span></div>' +
+            '<div class="btn-row" style="margin-top:0"><button class="btn sm" onclick="useRemoteClip(CARD_JOBS.dlCard.file_url, CARD_JOBS.dlCard.name)">В студию</button>' +
+            '<button class="btn ghost sm" onclick="saveJobFile(CARD_JOBS.dlCard)">Сохранить</button>' +
+            '<button class="btn ghost sm" onclick="sendJobToChat(CARD_JOBS.dlCard)">В Telegram</button></div></div>';
+          snack("Видео скачано", "ok");
+          refreshMe(true);
+        } catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+        return;
+      }
       if (/tiktok\.com/i.test(url) && !tc) {
         skeleton(box, 1);
         const vids = await findVideos(url, 1);
@@ -1510,6 +1820,21 @@
       const url = $("csUrl").value.trim();
       const cnt = Number($("csCount").value) || 3, dur = Number($("csDur").value) || 30;
       const box = $("csOut");
+      if (url && apiOk && /^https?:/i.test(url)) {
+        // Скачиваем ролик на сервере, кладём в студию и режем на моменты прямо здесь
+        box.innerHTML = '<div class="vcard" id="csCard"><div class="cardjob"></div></div>';
+        try {
+          const r = await api("/api/download", { body: { url, title: "Нарезка моментов", format: "1080" } });
+          const job = await waitJob(r.job, $("csCard").querySelector(".cardjob"));
+          if (!job || job.status !== "done") { box.innerHTML = '<div class="empty">' + esc((job && job.error) || "Не удалось скачать") + '</div>'; return; }
+          const blobUrl = await fetchAsBlob(job.file_url);
+          setSource(blobUrl || job.file_url, job.name, !!blobUrl);
+          await new Promise(res => { const v = $("srcVideo"); if (v.readyState > 0) res(); else { v.addEventListener("loadedmetadata", res, { once: true }); setTimeout(res, 8000); } });
+          $("csUrl").value = "";
+          return runClipsaw();
+        } catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+        return;
+      }
       if (url) {
         if (/tiktok\.com/i.test(url) || !/^https?:/i.test(url)) {
           skeleton(box, 2);
@@ -1972,6 +2297,41 @@
       saveBlob(S.rendered);
     }
 
+    function saveTts() {
+      if (S.ttsJob && S.ttsJob.file_url) { saveJobFile(S.ttsJob); return; }
+      if (S.ttsLocalUrl) { const a = document.createElement("a"); a.href = S.ttsLocalUrl; a.download = "westcut_voice.mp3"; document.body.appendChild(a); a.click(); a.remove(); return; }
+      snack("Сначала озвучь текст", "bad");
+    }
+
+    async function processOnServer() {
+      if (!S.sourceUrl) { snack("Сначала выбери видео", "bad"); scrollToId("drop"); return; }
+      if (!apiOk) { sendStudioToBot(); return; }
+      if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит Free на сегодня исчерпан", "bad"); buyPremium(); return; }
+      const mode = segValue("srvSeg") || "tiktok_pro";
+      const box = $("srvJob");
+      box.innerHTML = '<div class="jobbox"><div class="top-line"><span>Загружаю видео на сервер…</span><span class="spin"></span></div></div>';
+      try {
+        const blob = await (await fetch(S.sourceUrl)).blob();
+        if (blob.size > 95 * 1048576) { box.innerHTML = '<div class="empty">Файл больше 95 МБ — такой лучше отправить боту в чат документом.</div>'; return; }
+        const fd = new FormData();
+        fd.append("mode", mode);
+        fd.append("file", blob, S.sourceName || "video.mp4");
+        const r = await api("/api/process", { form: fd, timeout: 15 * 60000 });
+        const job = await waitJob(r.job, box);
+        if (!job || job.status !== "done") { box.innerHTML = '<div class="empty">' + esc((job && job.error) || "Не удалось обработать") + '</div>'; return; }
+        CARD_JOBS.srv = job;
+        box.innerHTML = '<div class="vcard" style="margin-top:10px"><video src="' + esc(job.file_url) + '" controls playsinline preload="metadata"></video>' +
+          '<div class="vmeta"><span>' + esc(job.title) + '</span><span>' + (job.size / 1048576).toFixed(1) + ' МБ</span></div>' +
+          '<div class="btn-row" style="margin-top:0"><button class="btn sm" onclick="saveJobFile(CARD_JOBS.srv)">Сохранить</button>' +
+          '<button class="btn ghost sm" onclick="sendJobToChat(CARD_JOBS.srv)">В Telegram</button></div></div>';
+        addHistory("Сервер · " + job.title);
+        snack("Готово: " + job.title, "ok");
+        refreshMe(true);
+      } catch (e) {
+        box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>';
+      }
+    }
+
     function sendStudioToBot() {
       const mode = { tiktok_pro: "hard", soft: "soft", hard: "hard", extreme: "extreme" }[S.uniq] || "soft";
       botAction({ action: "studio_preset", platform: "TikTok", mode }, "wa_s_TikTok_" + mode);
@@ -2006,6 +2366,11 @@
       if (/tiktok\.com/i.test(raw)) { showTrendResults("Видео по ссылке", ""); renderVideos($("trendResults"), await findVideos(raw, 1), "TikTok"); return; }
       const title = raw.replace(/https?:\/\/\S+/g, "").trim() || "Лучшие сцены";
       showTrendResults(title, "");
+      if (apiOk) {
+        const m = ep.match(/(\d+)\D+(\d+)/);
+        try { renderApiResults($("trendResults"), await searchMovieApi(/kinopoisk/i.test(raw) ? raw : title, cnt, m ? +m[1] : 0, m ? +m[2] : 0)); return; }
+        catch (e) { $("trendResults").innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; return; }
+      }
       renderVideos($("trendResults"), await findVideos((title + " " + ep + " отрывок момент").trim(), cnt), title, "wa_kino");
     }
 
@@ -2039,6 +2404,18 @@
     async function runTts() {
       const text = $("ttsText").value.trim(), voice = $("ttsVoice").value;
       if (!text) { snack("Введи текст", "bad"); return; }
+      if (apiOk) {
+        snack("Генерирую озвучку…");
+        try {
+          const r = await api("/api/tts", { body: { text, voice }, timeout: 120000 });
+          S.ttsJob = r.job;
+          $("ttsAudio").src = r.job.file_url;
+          $("ttsOut").classList.remove("hidden");
+          try { await $("ttsAudio").play(); } catch (e) {}
+          snack("Озвучка готова", "ok");
+        } catch (e) { snack(e.message, "bad"); }
+        return;
+      }
       snack("Генерирую озвучку…");
       const tl = /[а-яё]/i.test(text) ? "ru" : "en";
       const parts = (text.match(/[^.!?]{1,190}[.!?]?/g) || [text]).slice(0, 6);
@@ -2054,13 +2431,13 @@
       }
       if (buffers.length) {
         const url = URL.createObjectURL(new Blob(buffers, { type: "audio/mpeg" }));
-        $("ttsAudio").src = url; $("ttsDl").href = url;
+        $("ttsAudio").src = url; S.ttsLocalUrl = url;
         $("ttsOut").classList.remove("hidden");
         try { await $("ttsAudio").play(); } catch (e) {}
         snack("Озвучка готова", "ok");
       } else {
         $("ttsOut").classList.remove("hidden");
-        $("ttsAudio").removeAttribute("src"); $("ttsDl").removeAttribute("href");
+        $("ttsAudio").removeAttribute("src"); S.ttsLocalUrl = "";
         const spoke = speak(text, voice);
         snack(spoke ? "Воспроизвожу голосом устройства. MP3-файл сделает бот." : "Сервис озвучки недоступен — озвучь в боте", spoke ? "" : "bad");
       }
@@ -2129,9 +2506,17 @@
       }
       out.classList.remove("hidden"); haptic.tap();
     }
-    function askMentorBot() {
+    async function askMentorBot() {
       const q = $("mentorInput").value.trim();
       if (!q) { snack("Напиши вопрос", "bad"); return; }
+      if (apiOk) {
+        const out = $("mentorOut");
+        out.classList.remove("hidden");
+        out.innerHTML = '<div class="row"><span class="spin"></span><span class="muted">ИИ думает…</span></div>';
+        try { const r = await api("/api/ai", { body: { q }, timeout: 70000 }); out.textContent = r.answer; haptic.ok(); }
+        catch (e) { out.textContent = e.message; haptic.bad(); }
+        return;
+      }
       if (!isKeyboardLaunch()) { copyText(q); snack("Вопрос скопирован — вставь его ИИ-помощнику в боте"); }
       botAction({ action: "ai_tool", tool_type: "chat", query: q }, "wa_ai");
     }
@@ -2172,6 +2557,14 @@
     function submitScam() {
       const name = $("scamName").value.trim(), reason = $("scamReason").value.trim();
       if (!name || !reason) { snack("Заполни название и причину", "bad"); return; }
+      if (apiOk) {
+        api("/api/scam", { body: { name, reason } }).then(r => {
+          $("scamName").value = ""; $("scamReason").value = "";
+          snack(r.status === "approved" ? "Добавлено в чёрный список" : "Жалоба отправлена на проверку администратору", "ok");
+          if (r.status === "approved") refreshMe(true);
+        }).catch(e => snack(e.message, "bad"));
+        return;
+      }
       if (!isKeyboardLaunch()) { copyText(name + " — " + reason); snack("Текст скопирован — вставь в жалобу в боте"); }
       botAction({ action: "scam_report", name, reason }, "wa_scam");
     }
@@ -2189,7 +2582,8 @@
       startRender, cancelRender, saveRendered, saveCopy, shareRendered, sendStudioToBot,
       toggleRates, openCat, trendSearch,
       genScript, runTts, runChecker, genHooks, runSpy, askMentor, askMentorBot,
-      clearHistory, shareRef, submitScam
+      clearHistory, shareRef, submitScam,
+      S, CARD_JOBS, cardDownload, cardToStudio, saveJobFile, sendJobToChat, saveTts, processOnServer, openExternal
     });
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
