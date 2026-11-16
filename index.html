@@ -671,7 +671,7 @@
         <div class="avatar lg" id="avatarLg">W</div>
         <div>
           <div style="font-size:21px;font-weight:700;letter-spacing:-.4px" id="profName">Участник</div>
-          <div class="muted" style="font-size:13.5px" id="profRole">Free · 10 видео в день</div>
+          <div class="muted" style="font-size:13.5px" id="profRole">Free · 5 видео в день</div>
         </div>
       </div>
 
@@ -1029,7 +1029,8 @@
         S.balance = Number(me.balance || 0);
         S.isPremium = !!me.premium; S.isAdmin = !!me.admin;
         S.usedToday = Number(me.used_today || 0);
-        S.dailyLimit = me.daily_limit > 0 ? me.daily_limit : 10;
+        S.dailyLimit = me.daily_limit > 0 ? me.daily_limit : 5;
+        if (me.plan_title) S.planTitle = String(me.plan_title);
         S.premPrice = Number(me.prem_price || S.premPrice);
         S.starsPerUsd = Number(me.stars_per_usd || S.starsPerUsd);
         if (me.rates) Object.assign(S.rates, me.rates);
@@ -1077,7 +1078,7 @@
        ========================================================= */
     const S = {
       userId: 0, userName: "Участник", isPremium: false, isAdmin: false,
-      usedToday: 0, dailyLimit: 10, dailyGoal: 5, totalRendered: 0,
+      usedToday: 0, dailyLimit: 5, planTitle: "Free", dailyGoal: 5, totalRendered: 0,
       balance: null, premPrice: 15, starsPerUsd: 55, gateways: [],
       rates: { "410": 0.2, "414": 0.5, "416": 1.0, "418": 1.5 },
       sourceUrl: "", sourceName: "", sourceIsBlob: false,
@@ -1175,6 +1176,12 @@
       }
       if (params.get("prem") === "1" && (!urlUid || !S.userId || urlUid === S.userId)) S.isPremium = true;
 
+      // Тариф и дневной лимит из бота (Free 5 · Start 30 · Pro 100 · Premium без лимита)
+      const limFromBot = Number(params.get("lim") || 0);
+      if (limFromBot > 0) S.dailyLimit = limFromBot;
+      const planTitles = { free: "Free", start: "Start", pro: "Pro", premium: "Premium" };
+      if (planTitles[params.get("plan")]) S.planTitle = planTitles[params.get("plan")];
+
       const usedLocal = lsGet("wc_used_" + today(), 0);
       S.usedToday = Math.max(Number(params.get("used") || 0), Number(usedLocal || 0));
       S.dailyGoal = Number(await cloudGet("wc_goal", 5)) || 5;
@@ -1218,8 +1225,8 @@
       $("helloName").textContent = S.userName;
       $("profName").textContent = S.userName;
       $("planDot").classList.toggle("pro", S.isPremium);
-      $("planLine").textContent = S.isPremium ? "Premium · без лимитов" : ("Free · " + S.usedToday + " из " + S.dailyLimit + " сегодня");
-      $("profRole").textContent = S.isPremium ? (S.isAdmin ? "Premium · администратор" : "Premium · без лимитов") : "Free · " + S.dailyLimit + " видео в день";
+      $("planLine").textContent = S.isPremium ? "Premium · без лимитов" : ((S.planTitle || "Free") + " · " + S.usedToday + " из " + S.dailyLimit + " сегодня");
+      $("profRole").textContent = S.isPremium ? (S.isAdmin ? "Premium · администратор" : "Premium · без лимитов") : (S.planTitle || "Free") + " · " + S.dailyLimit + " видео в день";
       animateNumber($("balTop"), S.balance);
       animateNumber($("balBig"), S.balance);
       $("stUsed").textContent = S.usedToday;
@@ -2018,7 +2025,7 @@
     async function startRender(mode, promptCfg, range) {
       if (S.rendering) { snack("Монтаж уже идёт"); return; }
       if (mode === "premium" && !S.isPremium) { snack("Авто-сборка доступна в Premium"); buyPremium(); return; }
-      if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит Free на сегодня исчерпан", "bad"); buyPremium(); return; }
+      if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит на сегодня исчерпан", "bad"); buyPremium(); return; }
       if (!S.sourceUrl) { snack("Сначала выбери видео", "bad"); scrollToId("drop"); return; }
       if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { snack("Этот браузер не умеет монтировать видео. Обнови Telegram.", "bad"); return; }
 
@@ -2306,7 +2313,7 @@
     async function processOnServer() {
       if (!S.sourceUrl) { snack("Сначала выбери видео", "bad"); scrollToId("drop"); return; }
       if (!apiOk) { sendStudioToBot(); return; }
-      if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит Free на сегодня исчерпан", "bad"); buyPremium(); return; }
+      if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит на сегодня исчерпан", "bad"); buyPremium(); return; }
       const mode = segValue("srvSeg") || "tiktok_pro";
       const box = $("srvJob");
       box.innerHTML = '<div class="jobbox"><div class="top-line"><span>Загружаю видео на сервер…</span><span class="spin"></span></div></div>';
