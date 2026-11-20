@@ -1099,27 +1099,27 @@
     function hostOf(u) { try { return new URL(u).host.replace(".trycloudflare.com", "…"); } catch (e) { return String(u || "—"); } }
     async function pingApi(base, label) {
       if (!base) return false;
-      const c = new AbortController(); const t = setTimeout(() => c.abort(), 8000);
+      const c = new AbortController(); const t = setTimeout(() => c.abort(), 5000);
       const t0 = Date.now();
       try {
         const r = await fetch(base + "/api/ping", { signal: c.signal, cache: "no-store" });
         DIAG[label || "api"] = hostOf(base) + " → " + r.status + " (" + (Date.now() - t0) + " мс)";
         return r.ok;
       } catch (e) {
-        DIAG[label || "api"] = hostOf(base) + " → " + (e.name === "AbortError" ? "нет ответа 8 сек" : "не открывается (" + e.message + ")");
+        DIAG[label || "api"] = hostOf(base) + " → " + (e.name === "AbortError" ? "нет ответа 5 сек" : "не открывается (" + e.message + ")");
         return false;
       } finally { clearTimeout(t); }
     }
     const DISC_ID = (params.get("disc") || String(lsGet("wc_disc", "") || "")).replace(/[^a-zA-Z0-9-]/g, "");
     if (params.get("disc")) lsSet("wc_disc", DISC_ID);
     async function discoverApi() {
-      // 1) Бот после каждого перезапуска записывает новый адрес сервера в постоянную «записку» (jsonblob)
-      if (DISC_ID) {
-        try {
-          const r = await fetch("https://jsonblob.com/api/jsonBlob/" + DISC_ID + "?t=" + Date.now(), { headers: { Accept: "application/json" }, cache: "no-store" });
-          if (r.ok) { const j = await r.json(); if (j && j.api) return String(j.api).replace(/\/+$/, ""); }
-        } catch (e) {}
-      }
+      // Бот после каждого перезапуска записывает новый адрес в «записку» (jsonblob) и в api.json на GitHub — спрашиваем оба сразу
+      const fromBlob = DISC_ID ? fetch("https://jsonblob.com/api/jsonBlob/" + DISC_ID + "?t=" + Date.now(), { headers: { Accept: "application/json" }, cache: "no-store" })
+        .then(r => r.ok ? r.json() : Promise.reject()).then(j => j && j.api ? String(j.api).replace(/\/+$/, "") : Promise.reject()) : Promise.reject();
+      const fromGh = discoverGithub().then(a => a || Promise.reject());
+      try { return await Promise.any([fromBlob, fromGh]); } catch (e) { return ""; }
+    }
+    async function discoverGithub() {
       // 2) или в api.json GitHub-репозитория приложения (если у бота есть GITHUB_TOKEN)
       const m = location.hostname.match(/^([a-z0-9-]+)\.github\.io$/i);
       if (!m) return "";
@@ -1155,21 +1155,29 @@
       } catch (e) { return false; }
     }
     async function resolveApiBase() {
-      const tried = new Set();
-      // адрес из самой кнопки — доверенный (его вписал бот)
+      // Проверяем все варианты адреса одновременно и берём первый рабочий — без ожидания таймаутов по очереди
       DIAG.button = URL_API ? "" : "в кнопке нет адреса";
-      if (URL_API) { tried.add(URL_API); if (await pingApi(URL_API, "кнопка")) { API_BASE = URL_API; lsSet("wc_api", URL_API); return true; } }
-      const cands = [String(lsGet("wc_api", "") || "")];
-      if (API_TOKEN) { const d = await discoverApi(); DIAG["записка"] = DISC_ID ? (d ? hostOf(d) : "пусто / не открылась") : "нет номера в кнопке"; cands.push(d); }
+      const cached = String(lsGet("wc_api", "") || "");
+      const attempt = async (c, label, verify) => {
+        if (!c) throw 0;
+        if (!(await pingApi(c, label))) throw 0;
+        if (verify && !(await verifyServer(c))) throw 0;
+        return c;
+      };
+      const tasks = [];
+      if (URL_API) tasks.push(attempt(URL_API, "кнопка", false));            // адрес из кнопки вписал сам бот
+      if (cached && cached !== URL_API) tasks.push(attempt(cached, "запасной", !!API_TOKEN));
+      if (API_TOKEN) tasks.push(discoverApi().then(d => {
+        DIAG["записка"] = d ? hostOf(d) : (DISC_ID ? "пусто / не открылась" : "нет номера, смотрю GitHub");
+        if (!d || d === URL_API || d === cached) throw 0;
+        return attempt(d, "новый адрес", true);
+      }));
       else DIAG["токен"] = "нет (кнопка без токена)";
-      for (const c of cands) {
-        if (!c || tried.has(c)) continue; tried.add(c);
-        if (await pingApi(c, "запасной") && (c === lsGet("wc_api", "") && !API_TOKEN ? true : await verifyServer(c))) {
-          API_BASE = c; lsSet("wc_api", c); return true;
-        }
-      }
-      return false;
+      if (!tasks.length) return false;
+      try { const c = await Promise.any(tasks); API_BASE = c; lsSet("wc_api", c); return true; }
+      catch (e) { return false; }
     }
+
     // Сервер перезапускается ~20–40 сек: тихо переподключаемся сами, плашку показываем только если совсем не вышло
     let reconnecting = null;
     function keepReconnecting() {
@@ -1177,7 +1185,7 @@
       reconnecting = (async () => {
         const started = Date.now();
         while (Date.now() - started < 150000) {
-          await new Promise(z => setTimeout(z, 5000));
+          await new Promise(z => setTimeout(z, 2500));
           if (await resolveApiBase() && await refreshMe(true)) {
             $("connBar").classList.add("hidden");
             try { applyAfterConnect(); } catch (e) {}
@@ -1243,6 +1251,20 @@
       try {
         const me = await api("/api/me", { timeout: 12000 });
         apiOk = true;
+        applyMe(me);
+        lsSet("wc_me_" + (S.userId || me.user_id || 0), me);
+        return true;
+      } catch (e) {
+        DIAG["вход"] = (e.status || "") + " " + e.message;
+        if (e.status === 401) showConnBar("Приложение открыто старой кнопкой. Нажми «Обновить» — баланс и тариф подтянутся.");
+        else if (e.status === 403) showConnBar("Доступ ограничен. Напиши в поддержку.");
+        else if (!silent) snack(e.message, "bad");
+        return false;
+      }
+    }
+    // Данные профиля: применяем и с сервера, и мгновенно из памяти телефона (пока идёт подключение)
+    function applyMe(me) {
+      {
         S.balance = Number(me.balance || 0);
         if (me.name && (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user)) S.userName = String(me.name).slice(0, 40);
         S.isPremium = !!me.premium; S.isAdmin = !!me.admin;
@@ -1255,13 +1277,6 @@
         if (Array.isArray(me.gateways)) S.gateways = me.gateways.filter(g => GATEWAYS[g]);
         if (Array.isArray(me.scam)) S.scamList = me.scam;
         renderHeader(); renderGoal(); renderMethods(); renderBoost(); renderScam();
-        return true;
-      } catch (e) {
-        DIAG["вход"] = (e.status || "") + " " + e.message;
-        if (e.status === 401) showConnBar("Приложение открыто старой кнопкой. Нажми «Обновить» — баланс и тариф подтянутся.");
-        else if (e.status === 403) showConnBar("Доступ ограничен. Напиши в поддержку.");
-        else if (!silent) snack(e.message, "bad");
-        return false;
       }
     }
 
@@ -1423,15 +1438,22 @@
       bindTabs(); bindSegments(); bindSwitches(); bindSheetsMisc();
       renderHeader(); renderUniqHint(); renderCats(); renderScam(); renderGoal(); renderHistory(); renderMethods(); renderBoost();
       if (tg && tg.BackButton) tg.BackButton.onClick(() => closeSheet());
+      // Мгновенно показываем последние данные из памяти телефона, затем обновляем с сервера
+      try {
+        const cm = lsGet("wc_me_" + (S.userId || 0), null);
+        if (cm && cm.user_id && (!S.userId || cm.user_id === S.userId)) applyMe(cm);
+        const cb = lsGet("wc_boostcat", null);
+        if (Array.isArray(cb) && cb.length) { S.boostCat = cb; renderBoost(); }
+      } catch (e) {}
       // Живые данные из бота: баланс, Premium, лимиты, цены
       const apiAlive = await resolveApiBase();
       await refreshMe(true);
       if (!apiAlive) keepReconnecting();
       if (!apiOk) $("payNote").textContent = "Счёт придёт в чат с ботом. Баланс зачислится автоматически сразу после оплаты.";
       applyDeepLink();
-      window.applyAfterConnect = () => { checkNews(); loadServerHistory(); renderHeader(); };
+      window.applyAfterConnect = () => { checkNews(); loadServerHistory(); renderHeader(); loadBoostCatalog(); };
       if (apiOk) {
-        checkNews(); loadServerHistory();
+        checkNews(); loadServerHistory(); loadBoostCatalog();
         api("/api/bonus", { timeout: 12000 }).then(b => { S.bonus = b; renderBonusRow(); }).catch(() => {});
       }
       document.addEventListener("visibilitychange", () => { if (!document.hidden && apiOk) refreshMe(true); });
@@ -1716,7 +1738,7 @@
       if (!apiOk) return;
       try {
         const r = await api("/api/boost/services", { timeout: 15000 });
-        S.boostCat = r.platforms; if (typeof r.balance === "number") S.balance = r.balance;
+        S.boostCat = r.platforms; lsSet("wc_boostcat", r.platforms); if (typeof r.balance === "number") S.balance = r.balance;
         renderBoost();
       } catch (e) {}
       loadBoostOrders();
