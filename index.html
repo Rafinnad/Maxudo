@@ -108,7 +108,7 @@
     details.more summary::after { content: "›"; font-size: 20px; transform: rotate(90deg); transition: transform .2s; }
     details.more[open] summary::after { transform: rotate(-90deg); }
     details.more[open] summary { margin-bottom: 12px; }
-    .conn-bar { position: sticky; top: 0; z-index: 40; margin: 0 0 12px; padding: 12px 14px; border-radius: 14px; background: #fff4e5; color: #8a4b00; display: flex; align-items: center; gap: 10px; font-size: 13.5px; line-height: 1.35; }
+    .conn-bar { position: fixed; left: 12px; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 10px); z-index: 90; max-width: 536px; margin: 0 auto; box-shadow: 0 8px 24px rgba(0,0,0,.18); padding: 12px 14px; border-radius: 14px; background: #fff4e5; color: #8a4b00; display: flex; align-items: center; gap: 10px; font-size: 13.5px; line-height: 1.35; }
     :root[data-theme="dark"] .conn-bar { background: #3a2a12; color: #ffcf8a; }
     .conn-bar b { display: block; font-size: 14px; }
     .conn-bar .btn { width: auto; height: 34px; padding: 0 14px; font-size: 13px; flex-shrink: 0; }
@@ -450,7 +450,6 @@
 
     <!-- ===================== STUDIO ===================== -->
     <section class="view active" id="view-studio">
-      <div class="conn-bar hidden" id="connBar"><div style="flex:1"><b>Нет связи с сервером</b><span id="connText">Нажми «Обновить» — откроется свежая версия приложения.</span></div><button class="btn" onclick="reconnectApp()">Обновить</button></div>
       <div class="h1">Студия</div>
       <div class="lead">Выбери видео, настрой эффекты и смонтируй прямо здесь.</div>
 
@@ -780,6 +779,7 @@
     </section>
   </div>
 
+  <div class="conn-bar hidden" id="connBar"><div style="flex:1"><b>Нет связи с сервером</b><span id="connText">Нажми «Обновить» — откроется свежая версия приложения.</span></div><button class="btn" onclick="reconnectApp()">Обновить</button></div>
   <!-- ===== Tab bar ===== -->
   <nav class="tabbar">
     <div class="tabbar-in">
@@ -1173,7 +1173,7 @@
             reconnecting = null;
             return true;
           }
-          if (Date.now() - started > 60000) showConnBar("Сервер обновляется. Можно подождать или нажать «Обновить».");
+          if (Date.now() - started > 20000) showConnBar("Кнопка устарела после перезапуска бота. Нажми «Обновить» — откроется новая.");
         }
         reconnecting = null;
         return false;
@@ -2613,7 +2613,9 @@
       if (!S.sourceUrl) { snack("Сначала выбери видео", "bad"); scrollToId("drop"); return; }
       if (!apiOk) {
         $("srvJob").innerHTML = '<div class="jobbox"><div class="top-line"><span>Подключаюсь к серверу…</span><span class="spin"></span></div></div>';
-        if (!(await ensureApi()) && !(await keepReconnecting())) { $("srvJob").innerHTML = '<div class="empty">Сервер обновляется — попробуй через минуту.</div>'; return; }
+        if (!(await ensureApi()) && !(await Promise.race([keepReconnecting(), new Promise(z => setTimeout(() => z(false), 20000))]))) {
+          $("srvJob").innerHTML = '<div class="empty">Нет связи с сервером.<button class="btn" style="margin-top:12px" onclick="reconnectApp()">Обновить приложение</button></div>'; return;
+        }
       }
       if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит на сегодня исчерпан", "bad"); openPlans(); return; }
       const mode = segValue("srvSeg") || "tiktok_pro";
@@ -2923,10 +2925,11 @@
     }
     async function needApi(boxId) {
       if (apiOk) return true;
-      if (boxId && $(boxId)) $(boxId).innerHTML = '<div class="empty"><span class="spin"></span><div style="margin-top:8px">Подключаюсь к серверу…</div></div>';
+      const box = boxId && $(boxId);
+      if (box) box.innerHTML = '<div class="empty"><span class="spin"></span><div style="margin-top:8px">Подключаюсь к серверу…</div></div>';
       if (await ensureApi()) return true;
-      const ok = await keepReconnecting();
-      if (!ok && boxId && $(boxId)) $(boxId).innerHTML = '<div class="empty">Сервер обновляется — попробуй через минуту.</div>';
+      const ok = await Promise.race([keepReconnecting(), new Promise(z => setTimeout(() => z(false), 20000))]);
+      if (!ok && box) box.innerHTML = '<div class="empty">Нет связи с сервером.<button class="btn" style="margin-top:12px" onclick="reconnectApp()">Обновить приложение</button></div>';
       return ok;
     }
     function fmtDate(ts) { return ts ? new Date(ts * 1000).toLocaleDateString("ru-RU") : ""; }
@@ -3221,7 +3224,8 @@
         if (!apiOk) {
           snack("Подключаюсь к серверу…");
           await ensureApi();
-          if (!apiOk) await keepReconnecting();
+          if (!apiOk) await Promise.race([keepReconnecting(), new Promise(z => setTimeout(() => z(false), 20000))]);
+          if (!apiOk) { showConnBar(); return; }
         }
         return fn.apply(this, arguments);
       };
