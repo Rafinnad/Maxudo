@@ -99,8 +99,19 @@
     .news-date { font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
     .news-text { font-size: 14.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
     .rdot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad, #e5484d); flex-shrink: 0; }
-    #srvSeg { flex-wrap: wrap; overflow: visible; }
-    #srvSeg button { flex: 1 0 30%; }
+    #srvSeg { flex-wrap: wrap; overflow: visible; padding: 4px; }
+    #srvSeg button { flex: 1 0 30%; height: 40px; }
+    #srvSeg .mgroup { flex: 0 0 100%; font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3, var(--text-2)); padding: 8px 8px 4px; }
+    details.more { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+    details.more summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-2); }
+    details.more summary::-webkit-details-marker { display: none; }
+    details.more summary::after { content: "›"; font-size: 20px; transform: rotate(90deg); transition: transform .2s; }
+    details.more[open] summary::after { transform: rotate(-90deg); }
+    details.more[open] summary { margin-bottom: 12px; }
+    .conn-bar { position: sticky; top: 0; z-index: 40; margin: 0 0 12px; padding: 12px 14px; border-radius: 14px; background: #fff4e5; color: #8a4b00; display: flex; align-items: center; gap: 10px; font-size: 13.5px; line-height: 1.35; }
+    :root[data-theme="dark"] .conn-bar { background: #3a2a12; color: #ffcf8a; }
+    .conn-bar b { display: block; font-size: 14px; }
+    .conn-bar .btn { width: auto; height: 34px; padding: 0 14px; font-size: 13px; flex-shrink: 0; }
     .sheet-scroll { max-height: 62vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
     /* ---------- Header ---------- */
@@ -439,6 +450,7 @@
 
     <!-- ===================== STUDIO ===================== -->
     <section class="view active" id="view-studio">
+      <div class="conn-bar hidden" id="connBar"><div style="flex:1"><b>Нет связи с сервером</b><span id="connText">Нажми «Обновить» — откроется свежая версия приложения.</span></div><button class="btn" onclick="reconnectApp()">Обновить</button></div>
       <div class="h1">Студия</div>
       <div class="lead">Выбери видео, настрой эффекты и смонтируй прямо здесь.</div>
 
@@ -473,16 +485,49 @@
         </div>
       </div>
 
-      <div class="sec-title"><h2>Уникализация</h2></div>
-      <div class="seg" id="uniqSeg">
-        <button class="on" data-v="tiktok_pro">TikTok Pro</button>
-        <button data-v="soft">Мягкая</button>
-        <button data-v="hard">Жёсткая</button>
-        <button data-v="extreme">Экстрим</button>
-      </div>
-      <div class="seg-hint" id="uniqHint"></div>
-
-      <div class="sec-title"><h2>Эффекты</h2></div>
+      <div class="sec-title"><h2>Обработка видео</h2><span class="pill">MP4 · без потери качества</span></div>
+      <div class="card">
+        <div class="card-sub" style="margin-top:0;margin-bottom:12px">Выбери видео выше, отметь, что с ним сделать, — сервер обработает его и пришлёт готовый ролик.</div>
+        <div class="seg" id="srvSeg">
+          <div class="mgroup">Уникализация</div>
+          <button class="on" data-v="tiktok_pro">TikTok Pro</button>
+          <button data-v="soft">Мягкая</button>
+          <button data-v="hard">Жёсткая</button>
+          <button data-v="extreme">Экстрим</button>
+          <button data-v="anticopy">Анти-АП</button>
+          <button data-v="mirror">Зеркало</button>
+          <div class="mgroup">Эффекты</div>
+          <button data-v="subs">Субтитры</button>
+          <button data-v="vertical">Формат 9:16</button>
+          <button data-v="nosilence">Без пауз</button>
+          <button data-v="enhance">Улучшить</button>
+          <button data-v="gameplay">Геймплей</button>
+          <button data-v="compress">Сжать</button>
+          <button data-v="mp3">Только звук</button>
+        </div>
+        <div class="seg-hint" id="srvHint"></div>
+        <div class="field hidden" id="subsStyleBox"><select id="subsStyle" class="select">
+          <option value="hormozi" selected>Субтитры: Hormozi (пословная подсветка)</option>
+          <option value="mrbeast">Субтитры: MrBeast (крупно по центру)</option>
+          <option value="shorts">Субтитры: Shorts (жёлтый капс)</option>
+          <option value="karaoke">Субтитры: караоке</option>
+          <option value="neon">Субтитры: неон</option>
+          <option value="boxed">Субтитры: в тёмной плашке</option>
+          <option value="classic">Субтитры: классика</option>
+        </select></div>
+        <button class="btn" id="srvBtn" onclick="processOnServer()"><svg class="i sm"><use href="#i-spark"/></svg>Обработать видео</button>
+        <div id="srvJob"></div>
+        <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>Готовое видео можно сохранить на телефон, копия придёт в чат с ботом (выключается в Профиле). Нужно ещё что-то — нажми «Дальше» и выбери следующий режим.</span></div>
+        <details class="more">
+          <summary>Монтаж на телефоне: прогресс-бар, баннер, водяной знак, титры</summary>
+          <label class="label">Стиль</label>
+          <div class="seg" id="uniqSeg">
+            <button class="on" data-v="tiktok_pro">TikTok Pro</button>
+            <button data-v="soft">Мягкая</button>
+            <button data-v="hard">Жёсткая</button>
+            <button data-v="extreme">Экстрим</button>
+          </div>
+          <div class="seg-hint" id="uniqHint"></div>
       <div class="list" id="fxList">
         <div class="li tap" data-flag="vertical916"><div class="lic"><svg class="i sm"><use href="#i-ratio"/></svg></div><div class="lt"><b>Формат 9:16</b><small>1080×1920 для Shorts и TikTok</small></div><div class="sw"></div></div>
         <div class="li tap" data-flag="progressBar"><div class="lic"><svg class="i sm"><use href="#i-bar"/></svg></div><div class="lt"><b>Прогресс-бар</b><small>Полоса удержания сверху</small></div><div class="sw"></div></div>
@@ -504,37 +549,8 @@
         <div class="li tap" data-flag="split"><div class="lic"><svg class="i sm"><use href="#i-split"/></svg></div><div class="lt"><b>Два экрана</b><small>Видео сверху, анимированный фон снизу</small></div><div class="sw"></div></div>
       </div>
 
-      <button class="btn" id="renderBtn" onclick="startRender('studio')"><svg class="i sm"><use href="#i-spark"/></svg>Смонтировать</button>
-      <div class="card" style="margin-top:12px">
-        <div class="card-h"><h3>Обработка на сервере</h3><span class="pill">Полное качество</span></div>
-        <div class="card-sub">Та же уникализация, что в боте: настоящий FFmpeg, MP4, без потери качества.</div>
-        <div class="seg" id="srvSeg">
-          <button class="on" data-v="tiktok_pro">TikTok Pro</button>
-          <button data-v="soft">Мягкая</button>
-          <button data-v="hard">Жёсткая</button>
-          <button data-v="extreme">Экстрим</button>
-          <button data-v="anticopy">Анти-АП</button>
-          <button data-v="compress">Сжать</button>
-          <button data-v="subs">Субтитры</button>
-          <button data-v="vertical">9:16</button>
-          <button data-v="nosilence">Без пауз</button>
-          <button data-v="enhance">Улучшить</button>
-          <button data-v="mirror">Зеркало</button>
-          <button data-v="gameplay">Геймплей</button>
-          <button data-v="mp3">MP3</button>
-        </div>
-        <div class="field hidden" id="subsStyleBox"><select id="subsStyle" class="select">
-          <option value="hormozi" selected>Субтитры: Hormozi (пословная подсветка)</option>
-          <option value="mrbeast">Субтитры: MrBeast (крупно по центру)</option>
-          <option value="shorts">Субтитры: Shorts (жёлтый капс)</option>
-          <option value="karaoke">Субтитры: караоке</option>
-          <option value="neon">Субтитры: неон</option>
-          <option value="boxed">Субтитры: в тёмной плашке</option>
-          <option value="classic">Субтитры: классика</option>
-        </select></div>
-        <button class="btn dark" onclick="processOnServer()"><svg class="i sm"><use href="#i-layers"/></svg>Обработать на сервере</button>
-        <div id="srvJob"></div>
-        <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>Всё делается здесь, в приложении. Готовый файл можно сохранить, а копия придёт в чат с ботом (выключается в Профиле).</span></div>
+          <button class="btn ghost" id="renderBtn" onclick="startRender('studio')"><svg class="i sm"><use href="#i-wand"/></svg>Смонтировать на телефоне</button>
+        </details>
       </div>
 
       <div id="progressBox" class="card progress hidden">
@@ -1078,7 +1094,51 @@
        API бота: всё выполняется прямо в приложении (без перехода в чат).
        Адрес API бот кладёт в ссылку (?api=...). Если API недоступен — работаем по-старому через бота.
        ========================================================= */
-    const API_BASE = (params.get("api") || "").replace(/\/+$/, "");
+    let API_BASE = (params.get("api") || "").replace(/\/+$/, "");
+    const URL_API = API_BASE;
+    async function pingApi(base) {
+      if (!base) return false;
+      const c = new AbortController(); const t = setTimeout(() => c.abort(), 6000);
+      try { const r = await fetch(base + "/api/ping", { signal: c.signal, cache: "no-store" }); return r.ok; }
+      catch (e) { return false; } finally { clearTimeout(t); }
+    }
+    async function discoverApi() {
+      // Бот публикует актуальный адрес сервера в api.json того же GitHub-репозитория, где лежит приложение
+      const m = location.hostname.match(/^([a-z0-9-]+)\.github\.io$/i);
+      if (!m) return "";
+      const repo = location.pathname.split("/").filter(Boolean)[0] || (m[1] + ".github.io");
+      const urls = ["https://api.github.com/repos/" + m[1] + "/" + repo + "/contents/api.json",
+                    location.origin + "/" + (location.pathname.split("/").filter(Boolean)[0] || "") + "/api.json"];
+      for (const u of urls) {
+        try {
+          const r = await fetch(u + (u.includes("api.github.com") ? "" : "?t=" + Date.now()), { headers: u.includes("api.github.com") ? { Accept: "application/vnd.github.raw+json" } : {}, cache: "no-store" });
+          if (!r.ok) continue;
+          const j = await r.json();
+          if (j && j.api) return String(j.api).replace(/\/+$/, "");
+        } catch (e) {}
+      }
+      return "";
+    }
+    async function resolveApiBase() {
+      const tried = new Set();
+      const cands = [URL_API, String(lsGet("wc_api", "") || "")];
+      for (const c of cands) {
+        if (!c || tried.has(c)) continue; tried.add(c);
+        if (await pingApi(c)) { API_BASE = c; lsSet("wc_api", c); return true; }
+      }
+      const d = await discoverApi();
+      if (d && !tried.has(d) && await pingApi(d)) { API_BASE = d; lsSet("wc_api", d); return true; }
+      return false;
+    }
+    function showConnBar(text) {
+      if (text) $("connText").textContent = text;
+      $("connBar").classList.remove("hidden");
+    }
+    function reconnectApp() {
+      const link = "https://t.me/" + BOT + "?start=app";
+      try { if (tg && tg.openTelegramLink) { tg.openTelegramLink(link); setTimeout(() => { try { tg.close(); } catch (e) {} }, 300); return; } } catch (e) {}
+      window.open(link, "_blank");
+    }
     const API_TOKEN = params.get("tok") || "";
     let apiOk = false;
 
@@ -1127,7 +1187,9 @@
         renderHeader(); renderGoal(); renderMethods(); renderBoost(); renderScam();
         return true;
       } catch (e) {
-        if (!silent) snack(e.message, "bad");
+        if (e.status === 401) showConnBar("Приложение открыто старой кнопкой. Нажми «Обновить» — баланс и тариф подтянутся.");
+        else if (e.status === 403) showConnBar("Доступ ограничен. Напиши в поддержку.");
+        else if (!silent) snack(e.message, "bad");
         return false;
       }
     }
@@ -1282,13 +1344,17 @@
       $("refLink").value = "https://t.me/" + BOT + "?start=ref_" + (S.userId || 0);
       S.toChat = Number(lsGet("wc_to_chat", 1)) !== 0;
       $("toChatSw").classList.toggle("on", S.toChat);
-      $("srvSeg").addEventListener("click", () => setTimeout(() => $("subsStyleBox").classList.toggle("hidden", segValue("srvSeg") !== "subs"), 0));
+      $("srvSeg").addEventListener("click", () => setTimeout(renderSrvHint, 0));
+      renderSrvHint();
 
       bindTabs(); bindSegments(); bindSwitches(); bindSheetsMisc();
       renderHeader(); renderUniqHint(); renderCats(); renderScam(); renderGoal(); renderHistory(); renderMethods(); renderBoost();
       if (tg && tg.BackButton) tg.BackButton.onClick(() => closeSheet());
       // Живые данные из бота: баланс, Premium, лимиты, цены
+      const apiAlive = await resolveApiBase();
+      if (!apiAlive) showConnBar(URL_API ? "Сервер перезапустился. Нажми «Обновить» — откроется приложение с новым адресом." : "");
       await refreshMe(true);
+      if (apiAlive && apiOk) $("connBar").classList.add("hidden");
       if (!apiOk) $("payNote").textContent = "Счёт придёт в чат с ботом. Баланс зачислится автоматически сразу после оплаты.";
       applyDeepLink();
       if (apiOk) {
@@ -2489,7 +2555,7 @@
 
     async function processOnServer() {
       if (!S.sourceUrl) { snack("Сначала выбери видео", "bad"); scrollToId("drop"); return; }
-      if (!apiOk) { sendStudioToBot(); return; }
+      if (!apiOk) { showConnBar(); scrollToId("connBar"); snack("Нет связи с сервером — нажми «Обновить» вверху", "bad"); return; }
       if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит на сегодня исчерпан", "bad"); openPlans(); return; }
       const mode = segValue("srvSeg") || "tiktok_pro";
       const box = $("srvJob");
@@ -2514,7 +2580,7 @@
         box.innerHTML = '<div class="vcard" style="margin-top:10px"><video src="' + esc(job.file_url) + '" controls playsinline preload="metadata"></video>' +
           '<div class="vmeta"><span>' + esc(job.title) + '</span><span>' + (job.size / 1048576).toFixed(1) + ' МБ</span></div>' +
           '<div class="btn-row" style="margin-top:0"><button class="btn sm" onclick="saveJobFile(CARD_JOBS.srv)">Сохранить</button>' +
-          '<button class="btn ghost sm" onclick="useRemoteClip(CARD_JOBS.srv.file_url, CARD_JOBS.srv.name, CARD_JOBS.srv.id)">Дальше в студию</button>' +
+          '<button class="btn ghost sm" onclick="useRemoteClip(CARD_JOBS.srv.file_url, CARD_JOBS.srv.name, CARD_JOBS.srv.id)">Дальше</button>' +
           (job.to_chat ? '' : '<button class="btn ghost sm" onclick="sendJobToChat(CARD_JOBS.srv)">В Telegram</button>') + '</div></div>';
         addHistory("Сервер · " + job.title);
         snack("Готово: " + job.title, "ok");
@@ -2525,6 +2591,26 @@
       }
     }
 
+    const SRV_HINTS = {
+      tiktok_pro: "Сильная уникализация под TikTok: цвет, кадр, звук и метаданные — без видимой потери качества.",
+      soft: "Лёгкие изменения картинки и звука — ролик выглядит как оригинал.",
+      hard: "Заметнее меняет кадр, цвет и темп — для перезаливов.",
+      extreme: "Максимум изменений: зум, шум, сдвиг тона — когда остальное не проходит.",
+      anticopy: "Защита от авто-проверки на повтор (анти-АП).",
+      mirror: "Зеркалит видео по горизонтали.",
+      subs: "Распознаёт речь и вшивает субтитры выбранного стиля.",
+      vertical: "Делает 1080×1920 для Shorts, Reels и TikTok с размытым фоном.",
+      nosilence: "Вырезает паузы и тишину — ролик становится динамичнее.",
+      enhance: "Повышает чёткость, цвет и громкость голоса.",
+      gameplay: "Добавляет геймплей снизу — формат «два экрана».",
+      compress: "Уменьшает размер файла почти без потери качества.",
+      mp3: "Достаёт звук из видео в MP3.",
+    };
+    function renderSrvHint() {
+      const v = segValue("srvSeg") || "tiktok_pro";
+      $("srvHint").textContent = SRV_HINTS[v] || "";
+      $("subsStyleBox").classList.toggle("hidden", v !== "subs");
+    }
     function sendStudioToBot() {
       const mode = { tiktok_pro: "hard", soft: "soft", hard: "hard", extreme: "extreme" }[S.uniq] || "soft";
       botAction({ action: "studio_preset", platform: "TikTok", mode }, "wa_s_TikTok_" + mode);
@@ -3047,7 +3133,7 @@
 
     Object.assign(window, {
       openPlans, buyPlan, startTrial, topupFor, openBonus, claimBonus, openNews, sendSupport, toggleToChat, loadRef,
-      runServerMoments, loadChatSource, loadBoostCatalog,
+      runServerMoments, loadChatSource, loadBoostCatalog, reconnectApp,
       openSheet, closeSheet, switchView, scrollToId, openTg, copyText, botAction,
       payWith, buyPremium, activatePromo, pickBoost, submitBoost,
       onFilePicked, makeDemoVideo, quickFind, useRemoteClip, downloadUrl,
