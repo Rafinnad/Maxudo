@@ -779,7 +779,7 @@
     </section>
   </div>
 
-  <div class="conn-bar hidden" id="connBar"><div style="flex:1"><b>Нет связи с сервером</b><span id="connText">Нажми «Обновить» — откроется свежая версия приложения.</span></div><button class="btn" onclick="reconnectApp()">Обновить</button></div>
+  <div class="conn-bar hidden" id="connBar"><div style="flex:1"><b>Нет связи с сервером</b><span id="connText">Нажми «Обновить» — откроется свежая версия приложения.</span><pre id="connDiag" style="margin:6px 0 0;font-size:11px;white-space:pre-wrap;opacity:.75;font-family:inherit"></pre></div><button class="btn" onclick="reconnectApp()">Обновить</button></div>
   <!-- ===== Tab bar ===== -->
   <nav class="tabbar">
     <div class="tabbar-in">
@@ -1095,11 +1095,20 @@
        ========================================================= */
     let API_BASE = (params.get("api") || "").replace(/\/+$/, "");
     const URL_API = API_BASE;
-    async function pingApi(base) {
+    const DIAG = {};
+    function hostOf(u) { try { return new URL(u).host.replace(".trycloudflare.com", "…"); } catch (e) { return String(u || "—"); } }
+    async function pingApi(base, label) {
       if (!base) return false;
-      const c = new AbortController(); const t = setTimeout(() => c.abort(), 6000);
-      try { const r = await fetch(base + "/api/ping", { signal: c.signal, cache: "no-store" }); return r.ok; }
-      catch (e) { return false; } finally { clearTimeout(t); }
+      const c = new AbortController(); const t = setTimeout(() => c.abort(), 8000);
+      const t0 = Date.now();
+      try {
+        const r = await fetch(base + "/api/ping", { signal: c.signal, cache: "no-store" });
+        DIAG[label || "api"] = hostOf(base) + " → " + r.status + " (" + (Date.now() - t0) + " мс)";
+        return r.ok;
+      } catch (e) {
+        DIAG[label || "api"] = hostOf(base) + " → " + (e.name === "AbortError" ? "нет ответа 8 сек" : "не открывается (" + e.message + ")");
+        return false;
+      } finally { clearTimeout(t); }
     }
     const DISC_ID = (params.get("disc") || String(lsGet("wc_disc", "") || "")).replace(/[^a-zA-Z0-9-]/g, "");
     if (params.get("disc")) lsSet("wc_disc", DISC_ID);
@@ -1148,12 +1157,14 @@
     async function resolveApiBase() {
       const tried = new Set();
       // адрес из самой кнопки — доверенный (его вписал бот)
-      if (URL_API) { tried.add(URL_API); if (await pingApi(URL_API)) { API_BASE = URL_API; lsSet("wc_api", URL_API); return true; } }
+      DIAG.button = URL_API ? "" : "в кнопке нет адреса";
+      if (URL_API) { tried.add(URL_API); if (await pingApi(URL_API, "кнопка")) { API_BASE = URL_API; lsSet("wc_api", URL_API); return true; } }
       const cands = [String(lsGet("wc_api", "") || "")];
-      if (API_TOKEN) cands.push(await discoverApi());
+      if (API_TOKEN) { const d = await discoverApi(); DIAG["записка"] = DISC_ID ? (d ? hostOf(d) : "пусто / не открылась") : "нет номера в кнопке"; cands.push(d); }
+      else DIAG["токен"] = "нет (кнопка без токена)";
       for (const c of cands) {
         if (!c || tried.has(c)) continue; tried.add(c);
-        if (await pingApi(c) && (c === lsGet("wc_api", "") && !API_TOKEN ? true : await verifyServer(c))) {
+        if (await pingApi(c, "запасной") && (c === lsGet("wc_api", "") && !API_TOKEN ? true : await verifyServer(c))) {
           API_BASE = c; lsSet("wc_api", c); return true;
         }
       }
@@ -1188,6 +1199,8 @@
     }
     function showConnBar(text) {
       if (text) $("connText").textContent = text;
+      DIAG.tg = (tg && tg.initData ? "есть initData" : "без initData") + " · " + (API_TOKEN ? "токен есть" : "без токена") + " · v" + (tg && tg.version || "?");
+      $("connDiag").textContent = Object.entries(DIAG).filter(([k, v]) => v).map(([k, v]) => k + ": " + v).join("\n");
       $("connBar").classList.remove("hidden");
     }
     function reconnectApp() {
@@ -1231,6 +1244,7 @@
         const me = await api("/api/me", { timeout: 12000 });
         apiOk = true;
         S.balance = Number(me.balance || 0);
+        if (me.name && (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user)) S.userName = String(me.name).slice(0, 40);
         S.isPremium = !!me.premium; S.isAdmin = !!me.admin;
         S.usedToday = Number(me.used_today || 0);
         S.dailyLimit = me.daily_limit > 0 ? me.daily_limit : 5;
@@ -1243,6 +1257,7 @@
         renderHeader(); renderGoal(); renderMethods(); renderBoost(); renderScam();
         return true;
       } catch (e) {
+        DIAG["вход"] = (e.status || "") + " " + e.message;
         if (e.status === 401) showConnBar("Приложение открыто старой кнопкой. Нажми «Обновить» — баланс и тариф подтянутся.");
         else if (e.status === 403) showConnBar("Доступ ограничен. Напиши в поддержку.");
         else if (!silent) snack(e.message, "bad");
@@ -1363,7 +1378,9 @@
         S.userId = Number(u.id || 0);
         S.userName = [u.first_name, u.last_name].filter(Boolean).join(" ") || u.username || "Участник";
       } else if (params.get("uid")) {
+        // кнопка внизу чата: Telegram не передаёт профиль, имя берём из ссылки (его вписал бот)
         S.userId = Number(params.get("uid")) || 0;
+        if (params.get("nm")) S.userName = String(params.get("nm")).slice(0, 40);
       }
       if (S.userId === OWNER_ID) { S.isAdmin = true; S.isPremium = true; }
       if (params.get("adm") === "1") S.isAdmin = true;
