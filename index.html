@@ -320,7 +320,7 @@
       border-top: 1px solid var(--line);
       padding: 6px 8px calc(6px + var(--safe-b));
     }
-    .tabbar-in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
+    .tabbar-in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
     .tab { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; color: var(--text-3); font-size: 10.5px; font-weight: 500; transition: color .2s; }
     .tab.on { color: var(--accent); }
     .tab svg.i { width: 24px; height: 24px; transition: transform .2s var(--ease); }
@@ -785,7 +785,6 @@
     <div class="tabbar-in">
       <button class="tab on" data-view="studio"><svg class="i"><use href="#i-home"/></svg>Студия</button>
       <button class="tab" data-view="pro"><svg class="i"><use href="#i-spark"/></svg>Pro</button>
-      <button class="tab" data-view="trends"><svg class="i"><use href="#i-flame"/></svg>Тренды</button>
       <button class="tab" data-view="tools"><svg class="i"><use href="#i-grid"/></svg>Инструменты</button>
       <button class="tab" data-view="profile"><svg class="i"><use href="#i-user"/></svg>Профиль</button>
     </div>
@@ -1102,8 +1101,17 @@
       try { const r = await fetch(base + "/api/ping", { signal: c.signal, cache: "no-store" }); return r.ok; }
       catch (e) { return false; } finally { clearTimeout(t); }
     }
+    const DISC_ID = (params.get("disc") || String(lsGet("wc_disc", "") || "")).replace(/[^a-zA-Z0-9-]/g, "");
+    if (params.get("disc")) lsSet("wc_disc", DISC_ID);
     async function discoverApi() {
-      // Бот публикует актуальный адрес сервера в api.json того же GitHub-репозитория, где лежит приложение
+      // 1) Бот после каждого перезапуска записывает новый адрес сервера в постоянную «записку» (jsonblob)
+      if (DISC_ID) {
+        try {
+          const r = await fetch("https://jsonblob.com/api/jsonBlob/" + DISC_ID + "?t=" + Date.now(), { headers: { Accept: "application/json" }, cache: "no-store" });
+          if (r.ok) { const j = await r.json(); if (j && j.api) return String(j.api).replace(/\/+$/, ""); }
+        } catch (e) {}
+      }
+      // 2) или в api.json GitHub-репозитория приложения (если у бота есть GITHUB_TOKEN)
       const m = location.hostname.match(/^([a-z0-9-]+)\.github\.io$/i);
       if (!m) return "";
       const repo = location.pathname.split("/").filter(Boolean)[0] || (m[1] + ".github.io");
@@ -1119,15 +1127,63 @@
       }
       return "";
     }
+    async function sha256hex(s) {
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+      return Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2, "0")).join("");
+    }
+    // Адрес из публичной «записки» принимаем, только если сервер докажет, что он настоящий (знает подпись нашего токена)
+    async function verifyServer(base) {
+      const parts = API_TOKEN.split(".");
+      if (parts.length !== 3 || !/^https:\/\//.test(base)) return false;
+      try {
+        const n = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(x => x.toString(16).padStart(2, "0")).join("");
+        const c = new AbortController(); const t = setTimeout(() => c.abort(), 8000);
+        const r = await fetch(base + "/api/proof?u=" + parts[0] + "." + parts[1] + "&n=" + n, { signal: c.signal, cache: "no-store" });
+        clearTimeout(t);
+        if (!r.ok) return false;
+        const j = await r.json();
+        return j.p === await sha256hex(parts[2] + n);
+      } catch (e) { return false; }
+    }
     async function resolveApiBase() {
       const tried = new Set();
-      const cands = [URL_API, String(lsGet("wc_api", "") || "")];
+      // адрес из самой кнопки — доверенный (его вписал бот)
+      if (URL_API) { tried.add(URL_API); if (await pingApi(URL_API)) { API_BASE = URL_API; lsSet("wc_api", URL_API); return true; } }
+      const cands = [String(lsGet("wc_api", "") || "")];
+      if (API_TOKEN) cands.push(await discoverApi());
       for (const c of cands) {
         if (!c || tried.has(c)) continue; tried.add(c);
-        if (await pingApi(c)) { API_BASE = c; lsSet("wc_api", c); return true; }
+        if (await pingApi(c) && (c === lsGet("wc_api", "") && !API_TOKEN ? true : await verifyServer(c))) {
+          API_BASE = c; lsSet("wc_api", c); return true;
+        }
       }
-      const d = await discoverApi();
-      if (d && !tried.has(d) && await pingApi(d)) { API_BASE = d; lsSet("wc_api", d); return true; }
+      return false;
+    }
+    // Сервер перезапускается ~20–40 сек: тихо переподключаемся сами, плашку показываем только если совсем не вышло
+    let reconnecting = null;
+    function keepReconnecting() {
+      if (reconnecting) return reconnecting;
+      reconnecting = (async () => {
+        const started = Date.now();
+        while (Date.now() - started < 150000) {
+          await new Promise(z => setTimeout(z, 5000));
+          if (await resolveApiBase() && await refreshMe(true)) {
+            $("connBar").classList.add("hidden");
+            try { applyAfterConnect(); } catch (e) {}
+            reconnecting = null;
+            return true;
+          }
+          if (Date.now() - started > 60000) showConnBar("Сервер обновляется. Можно подождать или нажать «Обновить».");
+        }
+        reconnecting = null;
+        return false;
+      })();
+      return reconnecting;
+    }
+    async function ensureApi() {
+      if (apiOk) return true;
+      if (await resolveApiBase() && await refreshMe(true)) return true;
+      keepReconnecting();
       return false;
     }
     function showConnBar(text) {
@@ -1352,11 +1408,11 @@
       if (tg && tg.BackButton) tg.BackButton.onClick(() => closeSheet());
       // Живые данные из бота: баланс, Premium, лимиты, цены
       const apiAlive = await resolveApiBase();
-      if (!apiAlive) showConnBar(URL_API ? "Сервер перезапустился. Нажми «Обновить» — откроется приложение с новым адресом." : "");
       await refreshMe(true);
-      if (apiAlive && apiOk) $("connBar").classList.add("hidden");
+      if (!apiAlive) keepReconnecting();
       if (!apiOk) $("payNote").textContent = "Счёт придёт в чат с ботом. Баланс зачислится автоматически сразу после оплаты.";
       applyDeepLink();
+      window.applyAfterConnect = () => { checkNews(); loadServerHistory(); renderHeader(); };
       if (apiOk) {
         checkNews(); loadServerHistory();
         api("/api/bonus", { timeout: 12000 }).then(b => { S.bonus = b; renderBonusRow(); }).catch(() => {});
@@ -2555,7 +2611,10 @@
 
     async function processOnServer() {
       if (!S.sourceUrl) { snack("Сначала выбери видео", "bad"); scrollToId("drop"); return; }
-      if (!apiOk) { showConnBar(); scrollToId("connBar"); snack("Нет связи с сервером — нажми «Обновить» вверху", "bad"); return; }
+      if (!apiOk) {
+        $("srvJob").innerHTML = '<div class="jobbox"><div class="top-line"><span>Подключаюсь к серверу…</span><span class="spin"></span></div></div>';
+        if (!(await ensureApi()) && !(await keepReconnecting())) { $("srvJob").innerHTML = '<div class="empty">Сервер обновляется — попробуй через минуту.</div>'; return; }
+      }
       if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит на сегодня исчерпан", "bad"); openPlans(); return; }
       const mode = segValue("srvSeg") || "tiktok_pro";
       const box = $("srvJob");
@@ -2862,10 +2921,13 @@
       $("toChatSw").classList.toggle("on", toChatOn());
       snack(toChatOn() ? "Готовые файлы будут приходить в чат" : "Файлы останутся только в приложении", "ok");
     }
-    function needApi() {
+    async function needApi(boxId) {
       if (apiOk) return true;
-      snack("Сервер приложения недоступен — попробуй через минуту", "bad");
-      return false;
+      if (boxId && $(boxId)) $(boxId).innerHTML = '<div class="empty"><span class="spin"></span><div style="margin-top:8px">Подключаюсь к серверу…</div></div>';
+      if (await ensureApi()) return true;
+      const ok = await keepReconnecting();
+      if (!ok && boxId && $(boxId)) $(boxId).innerHTML = '<div class="empty">Сервер обновляется — попробуй через минуту.</div>';
+      return ok;
     }
     function fmtDate(ts) { return ts ? new Date(ts * 1000).toLocaleDateString("ru-RU") : ""; }
     function limText(n) { return n < 0 ? "Безлимит" : n + " видео в день"; }
@@ -2873,7 +2935,7 @@
     // ---------- Тарифы ----------
     async function openPlans() {
       openSheet("plans");
-      if (!needApi()) return;
+      if (!(await needApi("plansBody"))) return;
       $("plansBody").innerHTML = '<div class="empty"><span class="spin"></span></div>';
       try { S.plansData = await api("/api/plans"); renderPlans(); }
       catch (e) { $("plansBody").innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
@@ -2977,7 +3039,7 @@
     // ---------- Бонус дня ----------
     async function openBonus() {
       openSheet("bonus");
-      if (!needApi()) return;
+      if (!(await needApi("bonusBody"))) return;
       $("bonusBody").innerHTML = '<div class="empty"><span class="spin"></span></div>';
       try { renderBonus(await api("/api/bonus")); } catch (e) { $("bonusBody").innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
     }
@@ -3025,7 +3087,7 @@
     // ---------- Новости ----------
     async function openNews() {
       openSheet("news");
-      if (!needApi()) return;
+      if (!(await needApi("newsBody"))) return;
       $("newsBody").innerHTML = '<div class="empty"><span class="spin"></span></div>';
       try {
         const r = await api("/api/news");
@@ -3133,7 +3195,7 @@
 
     Object.assign(window, {
       openPlans, buyPlan, startTrial, topupFor, openBonus, claimBonus, openNews, sendSupport, toggleToChat, loadRef,
-      runServerMoments, loadChatSource, loadBoostCatalog, reconnectApp,
+      runServerMoments, loadChatSource, loadBoostCatalog, reconnectApp, ensureApi,
       openSheet, closeSheet, switchView, scrollToId, openTg, copyText, botAction,
       payWith, buyPremium, activatePromo, pickBoost, submitBoost,
       onFilePicked, makeDemoVideo, quickFind, useRemoteClip, downloadUrl,
@@ -3145,6 +3207,24 @@
       genScript, runTts, runChecker, genHooks, runSpy, askMentor, askMentorBot,
       clearHistory, shareRef, submitScam,
       S, CARD_JOBS, cardDownload, cardToStudio, saveJobFile, sendJobToChat, saveTts, processOnServer, openExternal
+    });
+
+    // Действия, которым нужен сервер: если связь ещё восстанавливается после перезапуска — сначала тихо переподключаемся,
+    // чтобы не уходить в чат с ботом и не показывать ошибок
+    ["payWith", "buyPremium", "activatePromo", "submitBoost", "quickFind", "runKino", "runSeriesSearch", "runDownload",
+     "runClipsaw", "saveAutopost", "publishAutopost", "runPrompt", "trendSearch", "genScript", "runTts", "runChecker",
+     "genHooks", "runSpy", "askMentor", "submitScam", "sendSupport", "buyPlan", "startTrial", "claimBonus",
+     "runServerMoments", "cardDownload", "sendJobToChat", "loadRef", "openCat"].forEach(name => {
+      const fn = window[name];
+      if (typeof fn !== "function") return;
+      window[name] = async function () {
+        if (!apiOk) {
+          snack("Подключаюсь к серверу…");
+          await ensureApi();
+          if (!apiOk) await keepReconnecting();
+        }
+        return fn.apply(this, arguments);
+      };
     });
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
