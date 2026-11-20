@@ -75,6 +75,33 @@
     .muted { color: var(--text-2); }
     .faint { color: var(--text-3); }
     .hidden { display: none !important; }
+    /* app-only: тарифы, бонус, новости */
+    .plan-list { display: grid; gap: 10px; margin-bottom: 12px; }
+    .plan-card { display: block; width: 100%; text-align: left; padding: 14px; border-radius: 16px; background: var(--surface-2); border: 2px solid transparent; transition: border-color .2s var(--ease), opacity .2s; }
+    .plan-card.on { border-color: var(--accent); background: var(--surface); }
+    .plan-card.dim { opacity: .55; }
+    .plan-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 16px; }
+    .plan-price { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .plan-price small { font-weight: 500; font-size: 12px; color: var(--text-2); }
+    .plan-sub { font-size: 13px; color: var(--text-2); margin: 3px 0 6px; }
+    .plan-perks { margin: 0 0 6px 18px; padding: 0; font-size: 13px; color: var(--text-2); }
+    .plan-perks li { margin: 2px 0; }
+    .plan-cur { padding: 6px 14px; margin-bottom: 12px; }
+    .disc { font-size: 11px; color: var(--ok, #22a06b); font-weight: 700; }
+    .bonus-hero { text-align: center; padding: 8px 0 12px; }
+    .bnum { font-size: 46px; font-weight: 800; letter-spacing: -1px; color: var(--accent); }
+    .bdots { display: flex; justify-content: center; gap: 6px; margin: 4px 0 14px; }
+    .bdot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: var(--surface-2); color: var(--text-2); }
+    .bdot.on { background: var(--accent); color: #fff; }
+    .news-item { padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .news-item:last-child { border-bottom: 0; }
+    .news-item img { width: 100%; border-radius: 12px; margin-bottom: 8px; display: block; }
+    .news-date { font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
+    .news-text { font-size: 14.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+    .rdot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad, #e5484d); flex-shrink: 0; }
+    #srvSeg { flex-wrap: wrap; overflow: visible; }
+    #srvSeg button { flex: 1 0 30%; }
+    .sheet-scroll { max-height: 62vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
     /* ---------- Header ---------- */
     .top {
@@ -422,7 +449,7 @@
         <button class="tile" onclick="openSheet('clipsaw')"><div class="ic"><svg class="i"><use href="#i-cut"/></svg></div><span>Нарезка<br>моментов</span></button>
         <button class="tile" onclick="switchView('tools'); scrollToId('ttsCard')"><div class="ic"><svg class="i"><use href="#i-mic"/></svg></div><span>Озвучка</span></button>
         <button class="tile" onclick="openSheet('autopost')"><div class="ic"><svg class="i"><use href="#i-send"/></svg></div><span>Авто-<br>постинг</span></button>
-        <button class="tile" onclick="openSheet('boost')"><div class="ic hot"><svg class="i"><use href="#i-trend"/></svg></div><span>Накрутка<br>TikTok</span></button>
+        <button class="tile" onclick="openSheet('boost')"><div class="ic hot"><svg class="i"><use href="#i-trend"/></svg></div><span>Накрутка<br>соцсетей</span></button>
         <button class="tile" onclick="openSheet('title')"><div class="ic"><svg class="i"><use href="#i-tag"/></svg></div><span>Плашка<br>с названием</span></button>
       </div>
 
@@ -488,10 +515,26 @@
           <button data-v="extreme">Экстрим</button>
           <button data-v="anticopy">Анти-АП</button>
           <button data-v="compress">Сжать</button>
+          <button data-v="subs">Субтитры</button>
+          <button data-v="vertical">9:16</button>
+          <button data-v="nosilence">Без пауз</button>
+          <button data-v="enhance">Улучшить</button>
+          <button data-v="mirror">Зеркало</button>
+          <button data-v="gameplay">Геймплей</button>
+          <button data-v="mp3">MP3</button>
         </div>
+        <div class="field hidden" id="subsStyleBox"><select id="subsStyle" class="select">
+          <option value="hormozi" selected>Субтитры: Hormozi (пословная подсветка)</option>
+          <option value="mrbeast">Субтитры: MrBeast (крупно по центру)</option>
+          <option value="shorts">Субтитры: Shorts (жёлтый капс)</option>
+          <option value="karaoke">Субтитры: караоке</option>
+          <option value="neon">Субтитры: неон</option>
+          <option value="boxed">Субтитры: в тёмной плашке</option>
+          <option value="classic">Субтитры: классика</option>
+        </select></div>
         <button class="btn dark" onclick="processOnServer()"><svg class="i sm"><use href="#i-layers"/></svg>Обработать на сервере</button>
         <div id="srvJob"></div>
-        <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>Геймплей, музыку и авто-субтитры по речи пока делает бот: <button class="text-btn" style="padding:0" onclick="sendStudioToBot()">открыть в боте →</button></span></div>
+        <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>Всё делается здесь, в приложении. Готовый файл можно сохранить, а копия придёт в чат с ботом (выключается в Профиле).</span></div>
       </div>
 
       <div id="progressBox" class="card progress hidden">
@@ -521,7 +564,7 @@
         <div class="crown"><svg class="i"><use href="#i-crown"/></svg></div>
         <h3 id="proTitle">WestCut Premium</h3>
         <p id="proDesc">Безлимит роликов, авто-сборка, промпт-монтаж и пачки уникальных копий.</p>
-        <button class="btn" id="proBtn" onclick="buyPremium()">Подключить за $15</button>
+        <button class="btn" id="proBtn" onclick="openPlans()">Выбрать тариф</button>
       </div>
 
       <div class="card">
@@ -691,11 +734,17 @@
       </div>
 
       <div class="list">
-        <button class="li tap" onclick="buyPremium()"><div class="lic" style="color:var(--gold)"><svg class="i sm"><use href="#i-crown"/></svg></div><div class="lt"><b>Premium</b><small id="premRowSub">Безлимит и авто-сборка</small></div><span class="lv" id="premRowVal">$15</span><svg class="i sm faint"><use href="#i-chev"/></svg></button>
-        <button class="li tap" onclick="openSheet('promo')"><div class="lic"><svg class="i sm"><use href="#i-gift"/></svg></div><div class="lt"><b>Промокод</b><small>Активировать бонус</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
-        <button class="li tap" onclick="openSheet('ref')"><div class="lic"><svg class="i sm"><use href="#i-user"/></svg></div><div class="lt"><b>Пригласить друзей</b><small>3 друга = 7 дней Premium</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
+        <button class="li tap" onclick="openPlans()"><div class="lic" style="color:var(--gold)"><svg class="i sm"><use href="#i-crown"/></svg></div><div class="lt"><b>Тариф</b><small id="premRowSub">Start · Pro · Premium</small></div><span class="lv" id="premRowVal">Free</span><svg class="i sm faint"><use href="#i-chev"/></svg></button>
+        <button class="li tap" onclick="openBonus()"><div class="lic" style="color:var(--accent)"><svg class="i sm"><use href="#i-gift"/></svg></div><div class="lt"><b>Бонус дня</b><small id="bonusRowSub">Заходи каждый день — больше видео</small></div><span class="rdot hidden" id="bonusDot"></span><svg class="i sm faint"><use href="#i-chev"/></svg></button>
+        <button class="li tap" onclick="openNews()"><div class="lic"><svg class="i sm"><use href="#i-info"/></svg></div><div class="lt"><b>Новости</b><small id="newsRowSub">Обновления и акции</small></div><span class="rdot hidden" id="newsDot"></span><svg class="i sm faint"><use href="#i-chev"/></svg></button>
+        <button class="li tap" onclick="openSheet('promo')"><div class="lic"><svg class="i sm"><use href="#i-tag"/></svg></div><div class="lt"><b>Промокод</b><small>Активировать бонус</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
+        <button class="li tap" onclick="openSheet('ref'); loadRef()"><div class="lic"><svg class="i sm"><use href="#i-user"/></svg></div><div class="lt"><b>Пригласить друзей</b><small>3 друга = 7 дней Premium</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
         <button class="li tap" onclick="openSheet('scam')"><div class="lic"><svg class="i sm"><use href="#i-ban"/></svg></div><div class="lt"><b>Скам-рекламодатели</b><small id="scamRowSub">Чёрный список</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
-        <button class="li tap" onclick="openTg('themaxudo')"><div class="lic"><svg class="i sm"><use href="#i-headset"/></svg></div><div class="lt"><b>Поддержка</b><small>@themaxudo</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
+        <button class="li tap" onclick="openSheet('support')"><div class="lic"><svg class="i sm"><use href="#i-headset"/></svg></div><div class="lt"><b>Поддержка</b><small>Ответ придёт в чат с ботом</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
+      </div>
+
+      <div class="list">
+        <div class="li tap" onclick="toggleToChat()"><div class="lic"><svg class="i sm"><use href="#i-send"/></svg></div><div class="lt"><b>Готовые файлы в чат</b><small>Копия каждого результата придёт в чат с ботом</small></div><div class="sw on" id="toChatSw"></div></div>
       </div>
 
       <div class="card">
@@ -805,10 +854,17 @@
 
   <div class="sheet" id="sheet-boost">
     <div class="grab"></div>
-    <div class="sheet-h"><h3>Накрутка TikTok</h3><button class="x" onclick="closeSheet()"><svg class="i sm"><use href="#i-x"/></svg></button></div>
-    <label class="label">Тариф</label>
+    <div class="sheet-h"><h3>Накрутка</h3><button class="x" onclick="closeSheet()"><svg class="i sm"><use href="#i-x"/></svg></button></div>
+    <div class="sheet-scroll">
+    <div class="seg" id="boostPlat">
+      <button class="on" data-v="tiktok">🎵 TikTok</button>
+      <button data-v="instagram">📸 Instagram</button>
+      <button data-v="youtube">▶️ YouTube</button>
+    </div>
+    <label class="label">Услуга</label>
     <div class="list" id="boostTariffs"></div>
-    <label class="label">Просмотры</label>
+    <div id="boostForm">
+    <label class="label" id="boostQtyLabel">Количество</label>
     <div class="chips" id="boostQty">
       <button class="chip" data-v="100">100</button>
       <button class="chip" data-v="500">500</button>
@@ -816,10 +872,14 @@
       <button class="chip" data-v="5000">5K</button>
       <button class="chip" data-v="10000">10K</button>
     </div>
+    <div class="field"><input type="number" inputmode="numeric" id="boostQtyCustom" class="input" placeholder="Своё количество" /></div>
     <div class="field"><input type="url" id="boostLink" class="input" placeholder="Ссылка на ролик TikTok" /></div>
     <button class="btn" id="boostBtn" onclick="submitBoost()">Заказать</button>
+    </div>
     <div id="boostResult"></div>
     <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span id="boostNote">Оплата списывается с баланса. Если заказ не создастся — деньги вернутся автоматически.</span></div>
+    <div id="boostOrdersBox" class="hidden"><div class="sec-title" style="margin-top:10px"><h2>Мои заказы</h2></div><div class="card flat" style="padding:4px 14px" id="boostOrders"></div></div>
+    </div>
   </div>
 
   <div class="sheet" id="sheet-title">
@@ -846,6 +906,7 @@
     <div class="sheet-h"><h3>Пригласить друзей</h3><button class="x" onclick="closeSheet()"><svg class="i sm"><use href="#i-x"/></svg></button></div>
     <p class="muted" style="font-size:14px;margin-bottom:12px">За каждых 3 друзей — 7 дней Premium. Один бонус в месяц.</p>
     <div class="row" style="margin-bottom:10px"><input type="text" id="refLink" class="input" readonly /><button class="btn icon ghost" onclick="copyText(document.getElementById('refLink').value)"><svg class="i sm"><use href="#i-copy"/></svg></button></div>
+    <div id="refStats" style="margin-bottom:12px"></div>
     <button class="btn" onclick="shareRef()"><svg class="i sm"><use href="#i-share"/></svg>Отправить другу</button>
   </div>
 
@@ -857,6 +918,33 @@
     <div class="field"><input type="text" id="scamName" class="input" placeholder="Название баннерки или @username" /></div>
     <div class="field"><input type="text" id="scamReason" class="input" placeholder="Что случилось: сумма, сроки, ссылка на пруфы" /></div>
     <button class="btn" onclick="submitScam()"><svg class="i sm"><use href="#i-alert"/></svg>Отправить на проверку</button>
+  </div>
+
+  <div class="sheet" id="sheet-plans">
+    <div class="grab"></div>
+    <div class="sheet-h"><h3>Тарифы</h3><button class="x" onclick="closeSheet()"><svg class="i sm"><use href="#i-x"/></svg></button></div>
+    <div class="sheet-scroll" id="plansBody"></div>
+  </div>
+
+  <div class="sheet" id="sheet-bonus">
+    <div class="grab"></div>
+    <div class="sheet-h"><h3>Бонус дня</h3><button class="x" onclick="closeSheet()"><svg class="i sm"><use href="#i-x"/></svg></button></div>
+    <div id="bonusBody"></div>
+  </div>
+
+  <div class="sheet" id="sheet-news">
+    <div class="grab"></div>
+    <div class="sheet-h"><h3>Новости</h3><button class="x" onclick="closeSheet()"><svg class="i sm"><use href="#i-x"/></svg></button></div>
+    <div class="sheet-scroll" id="newsBody"></div>
+  </div>
+
+  <div class="sheet" id="sheet-support">
+    <div class="grab"></div>
+    <div class="sheet-h"><h3>Поддержка</h3><button class="x" onclick="closeSheet()"><svg class="i sm"><use href="#i-x"/></svg></button></div>
+    <p class="muted" style="font-size:14px;margin-bottom:12px">Опиши вопрос или проблему — администратор ответит тебе в чат с ботом.</p>
+    <div class="field"><textarea id="supportText" class="textarea" maxlength="2000" placeholder="Например: не скачивается видео по ссылке…"></textarea></div>
+    <button class="btn" onclick="sendSupport()"><svg class="i sm"><use href="#i-send"/></svg>Отправить</button>
+    <button class="text-btn" style="margin-top:10px" onclick="openTg('themaxudo')">Написать напрямую @themaxudo</button>
   </div>
 
   <div class="snack" id="snack"><span class="sdot"></span><span id="snackText"></span></div>
@@ -1078,6 +1166,7 @@
        ========================================================= */
     const S = {
       userId: 0, userName: "Участник", isPremium: false, isAdmin: false,
+      toChat: true, srcJobId: null, plansData: null, planPick: null, planDays: 30, bonus: null,
       usedToday: 0, dailyLimit: 5, planTitle: "Free", dailyGoal: 5, totalRendered: 0,
       balance: null, premPrice: 15, starsPerUsd: 55, gateways: [],
       rates: { "410": 0.2, "414": 0.5, "416": 1.0, "418": 1.5 },
@@ -1090,7 +1179,7 @@
       rendered: null, renderedCopies: [], rendering: null,
       history: [], scamList: [],
       season: 0, episode: 1, kinoCount: 3,
-      boostSrv: "410", boostQty: 1000, topupAmt: 5
+      boostSrv: "410", boostQty: 1000, boostCat: null, boostPlat: "tiktok", topupAmt: 5
     };
 
     const UNIQ_HINTS = {
@@ -1191,6 +1280,9 @@
       if (ap) { $("apYt").value = ap.yt || ""; $("apTt").value = ap.tt || ""; $("apTg").value = ap.tg || ""; }
 
       $("refLink").value = "https://t.me/" + BOT + "?start=ref_" + (S.userId || 0);
+      S.toChat = Number(lsGet("wc_to_chat", 1)) !== 0;
+      $("toChatSw").classList.toggle("on", S.toChat);
+      $("srvSeg").addEventListener("click", () => setTimeout(() => $("subsStyleBox").classList.toggle("hidden", segValue("srvSeg") !== "subs"), 0));
 
       bindTabs(); bindSegments(); bindSwitches(); bindSheetsMisc();
       renderHeader(); renderUniqHint(); renderCats(); renderScam(); renderGoal(); renderHistory(); renderMethods(); renderBoost();
@@ -1198,6 +1290,11 @@
       // Живые данные из бота: баланс, Premium, лимиты, цены
       await refreshMe(true);
       if (!apiOk) $("payNote").textContent = "Счёт придёт в чат с ботом. Баланс зачислится автоматически сразу после оплаты.";
+      applyDeepLink();
+      if (apiOk) {
+        checkNews(); loadServerHistory();
+        api("/api/bonus", { timeout: 12000 }).then(b => { S.bonus = b; renderBonusRow(); }).catch(() => {});
+      }
       document.addEventListener("visibilitychange", () => { if (!document.hidden && apiOk) refreshMe(true); });
       try { tg && tg.onEvent && tg.onEvent("activated", () => apiOk && refreshMe(true)); } catch (e) {}
     }
@@ -1236,10 +1333,10 @@
       pb.classList.toggle("active", S.isPremium);
       $("proTitle").textContent = S.isPremium ? "Premium активен" : "WestCut Premium";
       $("proDesc").textContent = S.isPremium ? "Все функции открыты: авто-сборка, промпт-монтаж, пачки копий и безлимит." : "Безлимит роликов, авто-сборка, промпт-монтаж и пачки уникальных копий.";
-      $("proBtn").classList.toggle("hidden", S.isPremium);
-      $("proBtn").textContent = "Подключить за $" + Number(S.premPrice).toFixed(S.premPrice % 1 ? 2 : 0);
-      $("premRowVal").textContent = S.isPremium ? "Активен" : "$" + Number(S.premPrice).toFixed(S.premPrice % 1 ? 2 : 0);
-      $("premRowSub").textContent = S.isPremium ? "Подписка активна" : "Безлимит и авто-сборка на 30 дней";
+      $("proBtn").classList.toggle("hidden", S.isPremium && S.planTitle === "Premium");
+      $("proBtn").textContent = S.isPremium ? "Сменить тариф" : "Выбрать тариф";
+      $("premRowVal").textContent = S.planTitle || (S.isPremium ? "Premium" : "Free");
+      $("premRowSub").textContent = S.isPremium ? "Продлить или сменить тариф" : "Start · Pro · Premium — больше видео в день";
     }
 
     /* =========================================================
@@ -1262,7 +1359,7 @@
       const el = $("sheet-" + name);
       if (!el) return;
       if (name === "wallet") renderMethods();
-      if (name === "boost") renderBoost();
+      if (name === "boost") { renderBoost(); loadBoostCatalog(); }
       if (name === "scam") renderScam();
       if (name === "search") renderSeasonChips();
       el.classList.add("on");
@@ -1342,8 +1439,15 @@
       });
       $("boostQty").addEventListener("click", (e) => {
         const b = e.target.closest(".chip"); if (!b) return;
-        document.querySelectorAll("#boostQty .chip").forEach(x => x.classList.toggle("on", x === b));
-        S.boostQty = Number(b.dataset.v); renderBoost(); haptic.tap();
+        S.boostQty = Number(b.dataset.v); $("boostQtyCustom").value = ""; renderBoost(); haptic.tap();
+      });
+      $("boostQtyCustom").addEventListener("input", () => {
+        const v = parseInt($("boostQtyCustom").value, 10);
+        if (v > 0) { S.boostQty = v; renderBoost(); }
+      });
+      $("boostPlat").addEventListener("click", (e) => {
+        const b = e.target.closest("button"); if (!b) return;
+        S.boostPlat = b.dataset.v; S.boostSrv = null; $("boostResult").innerHTML = ""; renderBoost();
       });
       $("quickInput").addEventListener("keydown", (e) => { if (e.key === "Enter") quickFind(); });
       $("trendInput").addEventListener("keydown", (e) => { if (e.key === "Enter") trendSearch(); });
@@ -1424,6 +1528,7 @@
       }
     }
     async function buyPremium() {
+      if (apiOk) { openPlans(); return; }
       if (S.isPremium) { snack("Premium уже активен", "ok"); return; }
       if (S.balance !== null && S.balance < S.premPrice) {
         S.topupAmt = Math.ceil((S.premPrice - S.balance) * 100) / 100;
@@ -1466,7 +1571,63 @@
     /* =========================================================
        Boost (заказ выполняет бот, ключ API больше не в браузере)
        ========================================================= */
+    const BOOST_QTY_STEPS = [50, 100, 500, 1000, 5000, 10000, 50000];
+    function fmtQty(n) { return n >= 1000 && n % 1000 === 0 ? (n / 1000) + "K" : fmtNum(n); }
+    async function loadBoostCatalog() {
+      if (!apiOk) return;
+      try {
+        const r = await api("/api/boost/services", { timeout: 15000 });
+        S.boostCat = r.platforms; if (typeof r.balance === "number") S.balance = r.balance;
+        renderBoost();
+      } catch (e) {}
+      loadBoostOrders();
+    }
+    async function loadBoostOrders() {
+      try {
+        const r = await api("/api/boost/orders", { timeout: 12000 });
+        $("boostOrdersBox").classList.toggle("hidden", !r.orders.length);
+        $("boostOrders").innerHTML = r.orders.map(o =>
+          '<div class="kv"><span>#' + esc(o.order) + ' · ' + esc(o.title) + '</span><b>+' + fmtNum(o.quantity) + ' · ' + money(o.cost) + '</b></div>').join("");
+      } catch (e) {}
+    }
+    function boostPlatform() { return (S.boostCat || []).find(p => p.key === S.boostPlat) || null; }
+    function boostService() { const p = boostPlatform(); return p ? (p.services.find(s => s.key === S.boostSrv) || null) : null; }
     function renderBoost() {
+      if (!S.boostCat) return renderBoostLegacy();
+      $("boostPlat").querySelectorAll("button").forEach(b => {
+        const pl = S.boostCat.find(p => p.key === b.dataset.v);
+        b.classList.toggle("on", b.dataset.v === S.boostPlat);
+        b.style.opacity = pl && pl.services.length ? "" : ".5";
+      });
+      const p = boostPlatform();
+      if (!p || !p.services.length) {
+        $("boostTariffs").innerHTML = '<div class="empty" style="padding:14px">Накрутка ' + esc(p ? p.title : "") + ' скоро появится.</div>';
+        $("boostForm").classList.add("hidden");
+        $("boostNote").textContent = "Администратор ещё не включил услуги для этой площадки.";
+        return;
+      }
+      $("boostForm").classList.remove("hidden");
+      if (!boostService()) S.boostSrv = p.services[0].key;
+      const svc = boostService();
+      $("boostTariffs").innerHTML = p.services.map(t => {
+        const on = S.boostSrv === t.key;
+        return '<button class="li tap" onclick="pickBoost(\'' + esc(t.key) + '\')"><div class="lt"><b>' + esc(t.title) + '</b><small>от ' + fmtNum(t.min) + ' до ' + fmtNum(t.max) + ' ' + esc(t.unit) + '</small></div>' +
+          '<span class="lv">$' + Number(t.rate).toFixed(2) + ' / 1K</span>' +
+          '<div class="lic" style="background:' + (on ? 'var(--accent)' : 'var(--surface-2)') + ';color:' + (on ? '#fff' : 'transparent') + ';width:24px;height:24px;border-radius:50%"><svg class="i xs"><use href="#i-check"/></svg></div></button>';
+      }).join("");
+      const steps = BOOST_QTY_STEPS.filter(n => n >= svc.min && n <= svc.max).slice(0, 6);
+      if (!steps.length) steps.push(svc.min);
+      if (!(S.boostQty >= svc.min && S.boostQty <= svc.max)) S.boostQty = steps.includes(1000) ? 1000 : steps[0];
+      $("boostQty").innerHTML = steps.map(n => '<button class="chip' + (n === S.boostQty ? ' on' : '') + '" data-v="' + n + '">' + fmtQty(n) + '</button>').join("");
+      $("boostQtyLabel").textContent = "Сколько " + svc.unit;
+      $("boostQtyCustom").placeholder = "Своё количество: " + fmtNum(svc.min) + " – " + fmtNum(svc.max);
+      $("boostLink").placeholder = "Ссылка " + p.title + ": " + p.hint;
+      const cost = Math.max(0.01, S.boostQty / 1000 * Number(svc.rate));
+      $("boostBtn").textContent = "Заказать +" + fmtNum(S.boostQty) + " " + svc.unit + " · " + money(cost);
+      if (S.balance !== null && S.balance < cost) $("boostNote").textContent = "На балансе " + money(S.balance) + " — не хватает " + money(cost - S.balance) + ". Пополни в профиле.";
+      else $("boostNote").textContent = "Оплата списывается с баланса. Если заказ не создастся — деньги вернутся автоматически.";
+    }
+    function renderBoostLegacy() {
       const html = BOOST_TARIFFS.map(t => {
         const rate = Number(S.rates[t.id] || 0);
         const on = S.boostSrv === t.id;
@@ -1474,7 +1635,9 @@
           '<span class="lv">$' + rate.toFixed(2) + ' / 1K</span>' +
           '<div class="lic" style="background:' + (on ? 'var(--accent)' : 'var(--surface-2)') + ';color:' + (on ? '#fff' : 'transparent') + ';width:24px;height:24px;border-radius:50%"><svg class="i xs"><use href="#i-check"/></svg></div></button>';
       }).join("");
+      if (!S.rates[S.boostSrv]) S.boostSrv = "410";
       $("boostTariffs").innerHTML = html;
+      document.querySelectorAll("#boostQty .chip").forEach(x => x.classList.toggle("on", Number(x.dataset.v) === S.boostQty));
       const cost = Math.max(0.01, S.boostQty / 1000 * Number(S.rates[S.boostSrv] || 0));
       $("boostBtn").textContent = "Заказать " + fmtNum(S.boostQty) + " просмотров · " + money(cost);
       if (S.balance !== null && S.balance < cost) $("boostNote").textContent = "На балансе " + money(S.balance) + " — не хватает " + money(cost - S.balance) + ". Пополни в профиле.";
@@ -1483,7 +1646,10 @@
     function pickBoost(id) { S.boostSrv = id; renderBoost(); haptic.tap(); }
     function submitBoost() {
       const link = ($("boostLink").value || "").trim();
-      const cost = Math.max(0.01, S.boostQty / 1000 * Number(S.rates[S.boostSrv] || 0));
+      const svc = S.boostCat ? boostService() : null;
+      const rate = svc ? Number(svc.rate) : Number(S.rates[S.boostSrv] || 0);
+      const cost = Math.max(0.01, S.boostQty / 1000 * rate);
+      if (svc && (S.boostQty < svc.min || S.boostQty > svc.max)) { snack("Количество — от " + fmtNum(svc.min) + " до " + fmtNum(svc.max), "bad"); return; }
       if (S.balance !== null && S.balance < cost) {
         S.topupAmt = Math.ceil((cost - S.balance) * 100) / 100;
         $("topupAmt").value = S.topupAmt.toFixed(2);
@@ -1491,17 +1657,20 @@
         snack("Пополни баланс на " + money(cost - S.balance));
         return;
       }
-      if (link && !/tiktok\.com/i.test(link)) { snack("Нужна ссылка именно на TikTok", "bad"); return; }
+      const plat = svc ? boostPlatform() : { key: "tiktok", title: "TikTok" };
+      const hostRe = { tiktok: /tiktok\.com/i, instagram: /instagram\.com|instagr\.am/i, youtube: /youtube\.com|youtu\.be/i }[plat.key];
+      if (link && hostRe && !hostRe.test(link)) { snack("Нужна ссылка именно на " + plat.title, "bad"); return; }
       if (apiOk) {
-        if (!link) { snack("Вставь ссылку на ролик TikTok", "bad"); $("boostLink").focus(); return; }
+        if (!link) { snack("Вставь ссылку на " + plat.title, "bad"); $("boostLink").focus(); return; }
         const box = $("boostResult");
         $("boostBtn").disabled = true;
         box.innerHTML = '<div class="pay-wait"><div class="row"><span>Создаю заказ…</span><span class="spin"></span></div></div>';
         api("/api/boost", { body: { service: S.boostSrv, quantity: S.boostQty, link }, timeout: 60000 }).then(r => {
           S.balance = r.balance; renderHeader(); renderBoost();
-          box.innerHTML = '<div class="pay-wait">' + kv("Заказ", "#" + r.order) + kv("Просмотры", "+" + fmtNum(r.quantity)) + kv("Списано", money(r.cost)) + kv("Остаток", money(r.balance)) + '</div>';
+          box.innerHTML = '<div class="pay-wait">' + kv("Заказ", "#" + r.order) + kv(r.title || "Услуга", "+" + fmtNum(r.quantity) + " " + (r.unit || "")) + kv("Списано", money(r.cost)) + kv("Остаток", money(r.balance)) + '</div>';
           $("boostLink").value = "";
           snack("Накрутка запущена", "ok");
+          loadBoostOrders();
         }).catch(e => {
           if (e.data && typeof e.data.balance === "number") { S.balance = e.data.balance; renderHeader(); }
           box.innerHTML = '<div class="pay-wait"><b style="color:var(--bad)">' + esc(e.message) + '</b></div>';
@@ -1517,7 +1686,9 @@
     /* =========================================================
        Source video
        ========================================================= */
-    function setSource(url, name, isBlob) {
+    function jobIdFromUrl(url) { const m = String(url || "").match(/\/api\/file\/([^/]+)\//); return m ? m[1] : null; }
+    function setSource(url, name, isBlob, jobId) {
+      S.srcJobId = jobId || jobIdFromUrl(url);
       if (S.sourceIsBlob && S.sourceUrl && S.sourceUrl !== url) { try { URL.revokeObjectURL(S.sourceUrl); } catch (e) {} }
       S.sourceUrl = url; S.sourceName = name; S.sourceIsBlob = !!isBlob;
       const v = $("srcVideo");
@@ -1533,7 +1704,7 @@
     function onFilePicked(ev) {
       const f = ev.target.files && ev.target.files[0];
       if (!f) return;
-      setSource(URL.createObjectURL(f), f.name, true);
+      setSource(URL.createObjectURL(f), f.name, true, null);
       snack("Видео загружено", "ok");
     }
     // Скачиваем удалённый ролик в память (blob) — иначе браузер запретит его монтаж из-за CORS
@@ -1552,12 +1723,14 @@
       }
       return null;
     }
-    async function useRemoteClip(url, name) {
+    async function useRemoteClip(url, name, jobId) {
       closeSheet(true);
       switchView("studio");
       snack("Загружаю ролик в студию…");
+      const jid = jobId || jobIdFromUrl(url);
       const blobUrl = await fetchAsBlob(url);
-      if (blobUrl) { setSource(blobUrl, name, true); snack("Ролик в студии", "ok"); }
+      if (blobUrl) { setSource(blobUrl, name, true, jid); snack("Ролик в студии", "ok"); }
+      else if (jid) { setSource(url, name, false, jid); snack("Ролик в студии — серверная обработка доступна", "ok"); }
       else { setSource(url, name, false); snack("Ролик открыт для просмотра. Для монтажа лучше скачать и загрузить файлом.", "bad"); }
       scrollToId("srcPlayerWrap");
     }
@@ -1796,7 +1969,7 @@
       if (apiOk) {
         box.innerHTML = '<div class="vcard" id="dlCard"><div class="cardjob"></div></div>';
         try {
-          const r = await api("/api/download", { body: { url, timecode: tc, lang, format: "1080", title: url } });
+          const r = await api("/api/download", { body: { url, timecode: tc, lang, format: "1080", title: url, to_chat: toChatOn() } });
           const job = await waitJob(r.job, $("dlCard").querySelector(".cardjob"));
           if (!job || job.status !== "done") { box.innerHTML = '<div class="empty">' + esc((job && job.error) || "Не удалось скачать") + '</div>'; return; }
           CARD_JOBS.dlCard = job;
@@ -1804,10 +1977,10 @@
             '<div class="vmeta"><span>Готово</span><span>' + (job.size / 1048576).toFixed(1) + ' МБ</span></div>' +
             '<div class="btn-row" style="margin-top:0"><button class="btn sm" onclick="useRemoteClip(CARD_JOBS.dlCard.file_url, CARD_JOBS.dlCard.name)">В студию</button>' +
             '<button class="btn ghost sm" onclick="saveJobFile(CARD_JOBS.dlCard)">Сохранить</button>' +
-            '<button class="btn ghost sm" onclick="sendJobToChat(CARD_JOBS.dlCard)">В Telegram</button></div></div>';
-          snack("Видео скачано", "ok");
+            (job.to_chat ? '' : '<button class="btn ghost sm" onclick="sendJobToChat(CARD_JOBS.dlCard)">В Telegram</button>') + '</div></div>';
+          snack(job.to_chat ? "Видео скачано — копия уже в чате" : "Видео скачано", "ok");
           refreshMe(true);
-        } catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+        } catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; if (e.status === 402) openPlans(); }
         return;
       }
       if (/tiktok\.com/i.test(url) && !tc) {
@@ -1827,6 +2000,10 @@
       const url = $("csUrl").value.trim();
       const cnt = Number($("csCount").value) || 3, dur = Number($("csDur").value) || 30;
       const box = $("csOut");
+      if (apiOk && ((url && /^https?:/i.test(url)) || (!url && S.srcJobId))) {
+        // Нарезка лучших моментов делается на сервере — готовые клипы приходят сюда (и в чат)
+        return runServerMoments(url && /^https?:/i.test(url) ? url : "");
+      }
       if (url && apiOk && /^https?:/i.test(url)) {
         // Скачиваем ролик на сервере, кладём в студию и режем на моменты прямо здесь
         box.innerHTML = '<div class="vcard" id="csCard"><div class="cardjob"></div></div>';
@@ -2313,29 +2490,38 @@
     async function processOnServer() {
       if (!S.sourceUrl) { snack("Сначала выбери видео", "bad"); scrollToId("drop"); return; }
       if (!apiOk) { sendStudioToBot(); return; }
-      if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит на сегодня исчерпан", "bad"); buyPremium(); return; }
+      if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит на сегодня исчерпан", "bad"); openPlans(); return; }
       const mode = segValue("srvSeg") || "tiktok_pro";
       const box = $("srvJob");
-      box.innerHTML = '<div class="jobbox"><div class="top-line"><span>Загружаю видео на сервер…</span><span class="spin"></span></div></div>';
+      box.innerHTML = '<div class="jobbox"><div class="top-line"><span>' + (S.srcJobId ? "Запускаю обработку…" : "Загружаю видео на сервер…") + '</span><span class="spin"></span></div></div>';
       try {
-        const blob = await (await fetch(S.sourceUrl)).blob();
-        if (blob.size > 95 * 1048576) { box.innerHTML = '<div class="empty">Файл больше 95 МБ — такой лучше отправить боту в чат документом.</div>'; return; }
-        const fd = new FormData();
-        fd.append("mode", mode);
-        fd.append("file", blob, S.sourceName || "video.mp4");
-        const r = await api("/api/process", { form: fd, timeout: 15 * 60000 });
+        let r;
+        if (S.srcJobId) {
+          r = await api("/api/process", { body: { mode, src_job: S.srcJobId, style: $("subsStyle").value, to_chat: toChatOn() }, timeout: 60000 });
+        } else {
+          const blob = await (await fetch(S.sourceUrl)).blob();
+          if (blob.size > 95 * 1048576) { box.innerHTML = '<div class="empty">Файл больше 95 МБ — отправь его боту в чат, он сразу откроется здесь.</div>'; return; }
+          const fd = new FormData();
+          fd.append("mode", mode);
+          fd.append("style", $("subsStyle").value);
+          fd.append("to_chat", toChatOn() ? "1" : "0");
+          fd.append("file", blob, S.sourceName || "video.mp4");
+          r = await api("/api/process", { form: fd, timeout: 15 * 60000 });
+        }
         const job = await waitJob(r.job, box);
         if (!job || job.status !== "done") { box.innerHTML = '<div class="empty">' + esc((job && job.error) || "Не удалось обработать") + '</div>'; return; }
         CARD_JOBS.srv = job;
         box.innerHTML = '<div class="vcard" style="margin-top:10px"><video src="' + esc(job.file_url) + '" controls playsinline preload="metadata"></video>' +
           '<div class="vmeta"><span>' + esc(job.title) + '</span><span>' + (job.size / 1048576).toFixed(1) + ' МБ</span></div>' +
           '<div class="btn-row" style="margin-top:0"><button class="btn sm" onclick="saveJobFile(CARD_JOBS.srv)">Сохранить</button>' +
-          '<button class="btn ghost sm" onclick="sendJobToChat(CARD_JOBS.srv)">В Telegram</button></div></div>';
+          '<button class="btn ghost sm" onclick="useRemoteClip(CARD_JOBS.srv.file_url, CARD_JOBS.srv.name, CARD_JOBS.srv.id)">Дальше в студию</button>' +
+          (job.to_chat ? '' : '<button class="btn ghost sm" onclick="sendJobToChat(CARD_JOBS.srv)">В Telegram</button>') + '</div></div>';
         addHistory("Сервер · " + job.title);
         snack("Готово: " + job.title, "ok");
         refreshMe(true);
       } catch (e) {
         box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>';
+        if (e.status === 402) openPlans();
       }
     }
 
@@ -2579,7 +2765,289 @@
     /* =========================================================
        Expose for inline handlers
        ========================================================= */
+
+    /* =========================================================
+       📱 Всё в приложении: тарифы, бонус дня, новости, поддержка, рефералы
+       ========================================================= */
+    function toChatOn() { return S.toChat !== false; }
+    function toggleToChat() {
+      S.toChat = !toChatOn();
+      lsSet("wc_to_chat", S.toChat ? 1 : 0);
+      $("toChatSw").classList.toggle("on", toChatOn());
+      snack(toChatOn() ? "Готовые файлы будут приходить в чат" : "Файлы останутся только в приложении", "ok");
+    }
+    function needApi() {
+      if (apiOk) return true;
+      snack("Сервер приложения недоступен — попробуй через минуту", "bad");
+      return false;
+    }
+    function fmtDate(ts) { return ts ? new Date(ts * 1000).toLocaleDateString("ru-RU") : ""; }
+    function limText(n) { return n < 0 ? "Безлимит" : n + " видео в день"; }
+
+    // ---------- Тарифы ----------
+    async function openPlans() {
+      openSheet("plans");
+      if (!needApi()) return;
+      $("plansBody").innerHTML = '<div class="empty"><span class="spin"></span></div>';
+      try { S.plansData = await api("/api/plans"); renderPlans(); }
+      catch (e) { $("plansBody").innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+    }
+    function planPeriod() { return (S.plansData.periods || []).find(p => p.days === S.planDays) || S.plansData.periods[0]; }
+    function renderPlans() {
+      const d = S.plansData; if (!d) return;
+      if (!S.planDays) S.planDays = 30;
+      const cur = d.current;
+      if (!S.planPick || S.planPick === "free") S.planPick = cur.key === "free" ? "pro" : (cur.key === "premium" ? "premium" : cur.key);
+      const per = planPeriod();
+      let h = '<div class="card flat plan-cur"><div class="kv"><span>Сейчас</span><b>' + esc(cur.title) +
+        (cur.forever ? ' · навсегда' : (cur.until ? ' · до ' + fmtDate(cur.until) : '')) + '</b></div>' +
+        '<div class="kv"><span>Баланс</span><b>' + money(d.balance) + '</b></div></div>';
+      h += '<div class="seg" id="planDaysSeg">' + d.periods.map(p =>
+        '<button class="' + (p.days === S.planDays ? "on" : "") + '" data-days="' + p.days + '">' + esc(p.label) +
+        (p.discount ? ' <span class="disc">−' + p.discount + '%</span>' : '') + '</button>').join("") + '</div>';
+      h += '<div class="plan-list">';
+      d.plans.forEach(p => {
+        const isCur = p.key === cur.key;
+        if (p.key === "free") {
+          h += '<div class="plan-card' + (isCur ? ' cur' : '') + '"><div class="plan-top"><b>' + p.emoji + ' ' + esc(p.title) + '</b><span class="plan-price">0 $</span></div>' +
+            '<div class="plan-sub">' + limText(p.daily_limit) + ' · ' + esc(p.short) + '</div>' + (isCur ? '<span class="pill ok">Твой тариф</span>' : '') + '</div>';
+          return;
+        }
+        const q = per.plans[p.key] || {};
+        const blocked = !q.ok;
+        h += '<button class="plan-card tap' + (S.planPick === p.key ? ' on' : '') + (blocked ? ' dim' : '') + (isCur ? ' cur' : '') + '" data-plan="' + p.key + '">' +
+          '<div class="plan-top"><b>' + p.emoji + ' ' + esc(p.title) + '</b><span class="plan-price">' + money(q.price) +
+          '<small>/' + (per.days === 30 ? 'мес' : esc(per.label)) + '</small></span></div>' +
+          '<div class="plan-sub">' + limText(p.daily_limit) + ' · ' + esc(p.short) + '</div>' +
+          '<ul class="plan-perks">' + p.perks.map(x => '<li>' + esc(x) + '</li>').join("") + '</ul>' +
+          (isCur ? '<span class="pill ok">Твой тариф' + (cur.until ? ' · до ' + fmtDate(cur.until) : '') + '</span>' : '') +
+          (q.error === "higher_active" ? '<span class="pill">У тебя тариф выше</span>' : '') +
+          (q.ok && q.bonus_days ? '<span class="pill gold">+' + q.bonus_days + ' дн. за остаток тарифа</span>' : '') +
+          '</button>';
+      });
+      h += '</div>';
+      if (d.trial && d.trial.available) {
+        const tp = d.plans.find(p => p.key === d.trial.plan) || { title: d.trial.plan };
+        h += '<button class="btn ghost" onclick="startTrial()" style="margin-bottom:10px"><svg class="i sm"><use href="#i-gift"/></svg>Попробовать ' +
+          esc(tp.title) + ' ' + d.trial.days + ' дн. бесплатно</button>';
+      }
+      h += '<div id="planBuyBox"></div>';
+      $("plansBody").innerHTML = h;
+      $("planDaysSeg").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.planDays = Number(b.dataset.days); haptic.tap(); renderPlans(); };
+      document.querySelectorAll("#plansBody .plan-card.tap").forEach(c => c.onclick = () => { S.planPick = c.dataset.plan; haptic.tap(); renderPlans(); });
+      renderPlanBuy();
+    }
+    function renderPlanBuy() {
+      const d = S.plansData, per = planPeriod(), key = S.planPick;
+      const p = d.plans.find(x => x.key === key), q = per.plans[key] || {};
+      const box = $("planBuyBox");
+      if (!p || !q.ok) {
+        box.innerHTML = d.current.forever ? '<div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>У тебя бессрочный Premium — всё уже открыто.</span></div>' :
+          '<div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>Выбери тариф, который можно подключить.</span></div>';
+        return;
+      }
+      const lack = Math.max(0, q.price - d.balance);
+      box.innerHTML = '<div class="out" style="white-space:normal;margin-top:0;margin-bottom:10px">' +
+        '<div class="kv"><span>Тариф</span><b>' + p.emoji + ' ' + esc(p.title) + ' · ' + esc(per.label) + '</b></div>' +
+        (q.bonus_days ? '<div class="kv"><span>Бонус за остаток</span><b>+' + q.bonus_days + ' дн.</b></div>' : '') +
+        '<div class="kv"><span>Действует до</span><b>' + fmtDate(q.until) + '</b></div>' +
+        '<div class="kv"><span>К оплате</span><b>' + money(q.price) + (per.discount ? ' (−' + per.discount + '%)' : '') + '</b></div></div>' +
+        (lack > 0.0001
+          ? '<button class="btn" onclick="topupFor(' + lack.toFixed(2) + ')"><svg class="i sm"><use href="#i-plus"/></svg>Пополнить на ' + money(lack) + '</button>'
+          : '<button class="btn" id="planBuyBtn" onclick="buyPlan()"><svg class="i sm"><use href="#i-crown"/></svg>Оплатить ' + money(q.price) + ' с баланса</button>');
+    }
+    function topupFor(amount) {
+      S.topupAmt = Math.ceil(Number(amount) * 100) / 100;
+      $("topupAmt").value = S.topupAmt.toFixed(2);
+      document.querySelectorAll("#amounts .amt").forEach(x => x.classList.remove("on"));
+      openSheet("wallet");
+    }
+    async function buyPlan() {
+      const d = S.plansData, per = planPeriod(), p = d.plans.find(x => x.key === S.planPick), q = per.plans[S.planPick];
+      if (!p || !q || !q.ok) return;
+      const ok = await confirmTg("Подключить " + p.title + " (" + per.label + ") за " + money(q.price) + "? Сумма спишется с баланса.");
+      if (!ok) return;
+      const btn = $("planBuyBtn"); if (btn) btn.disabled = true;
+      try {
+        const r = await api("/api/plan/buy", { body: { plan: S.planPick, days: per.days } });
+        S.plansData = r; S.balance = r.balance;
+        haptic.ok && haptic.ok();
+        snack(p.title + " подключён до " + fmtDate(r.until), "ok");
+        await refreshMe(true); renderPlans();
+      } catch (e) {
+        if (btn) btn.disabled = false;
+        snack(e.message, "bad");
+        if (e.status === 402) topupFor(Math.max(0.2, (e.data.price || q.price) - (e.data.balance || 0)));
+      }
+    }
+    async function startTrial() {
+      try {
+        const r = await api("/api/trial", { body: {} });
+        S.plansData = r; snack("Пробный период включён до " + fmtDate(r.until), "ok");
+        await refreshMe(true); renderPlans();
+      } catch (e) { snack(e.message, "bad"); }
+    }
+
+    // ---------- Бонус дня ----------
+    async function openBonus() {
+      openSheet("bonus");
+      if (!needApi()) return;
+      $("bonusBody").innerHTML = '<div class="empty"><span class="spin"></span></div>';
+      try { renderBonus(await api("/api/bonus")); } catch (e) { $("bonusBody").innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+    }
+    function renderBonus(b) {
+      S.bonus = b; renderBonusRow();
+      if (!b.enabled) { $("bonusBody").innerHTML = '<div class="empty">Бонус дня сейчас отключён.</div>'; return; }
+      const dots = Array.from({ length: 7 }, (_, i) => '<span class="bdot' + (i < Math.min(7, b.streak) ? ' on' : '') + '">' + (i + 1) + '</span>').join("");
+      $("bonusBody").innerHTML =
+        '<div class="bonus-hero"><div class="bnum">' + (b.claimed ? "+" + b.today : "+" + b.next) + '</div>' +
+        '<div class="muted">' + (b.claimed ? "видео сверх лимита сегодня" : "видео можно забрать сегодня") + '</div></div>' +
+        '<div class="bdots">' + dots + '</div>' +
+        '<div class="kv"><span>Серия заходов</span><b>' + b.streak + ' дн.' + (b.best > b.streak ? ' (рекорд ' + b.best + ')' : '') + '</b></div>' +
+        '<div class="kv"><span>День 1–2 · 3–6 · 7+</span><b>+' + b.ladder.join(" · +") + ' видео</b></div>' +
+        (b.claimed ? '<button class="btn ghost" disabled style="margin-top:12px"><svg class="i sm"><use href="#i-check"/></svg>Получено — приходи завтра</button>'
+                   : '<button class="btn" style="margin-top:12px" onclick="claimBonus()"><svg class="i sm"><use href="#i-gift"/></svg>Забрать +' + b.next + ' видео</button>') +
+        '<div class="note"><svg class="i xs"><use href="#i-info"/></svg><span>' +
+        (b.unlimited ? "У тебя безлимит — бонус просто копит серию." : "Бонус действует до 00:00 по Киеву. Пропустишь день — серия начнётся заново.") + '</span></div>';
+    }
+    async function claimBonus() {
+      try {
+        const r = await api("/api/bonus/claim", { body: {} });
+        renderBonus(r);
+        if (r.just_claimed) { snack("+" + r.bonus + " видео на сегодня!", "ok"); S.dailyLimit = r.daily_limit > 0 ? r.daily_limit : S.dailyLimit; renderHeader(); }
+        else snack("Сегодня бонус уже получен");
+      } catch (e) { snack(e.message, "bad"); }
+    }
+    function renderBonusRow() {
+      const b = S.bonus; if (!b || !$("bonusRowSub")) return;
+      $("bonusRowSub").textContent = !b.enabled ? "Отключён" : (b.claimed ? "Получено · серия " + b.streak + " дн." : "Доступно +" + b.next + " видео");
+      $("bonusDot").classList.toggle("hidden", !b.enabled || b.claimed);
+    }
+
+    // ---------- Рефералы ----------
+    async function loadRef() {
+      if (!apiOk) return;
+      try {
+        const r = await api("/api/ref");
+        if (r.link) $("refLink").value = r.link;
+        $("refStats").innerHTML = '<div class="kv"><span>Приглашено друзей</span><b>' + r.total + '</b></div>' +
+          '<div class="kv"><span>До ' + r.reward_days + ' дней Premium</span><b>ещё ' + r.left + '</b></div>' +
+          '<div class="kv"><span>Бонусов в этом месяце</span><b>' + r.month_used + ' / ' + r.month_cap + '</b></div>';
+      } catch (e) {}
+    }
+
+    // ---------- Новости ----------
+    async function openNews() {
+      openSheet("news");
+      if (!needApi()) return;
+      $("newsBody").innerHTML = '<div class="empty"><span class="spin"></span></div>';
+      try {
+        const r = await api("/api/news");
+        lsSet("wc_news_seen", r.items.length ? r.items[0].id : 0); $("newsDot").classList.add("hidden");
+        $("newsBody").innerHTML = r.items.length ? r.items.map(n =>
+          '<div class="news-item">' + (n.photo ? '<img src="' + esc(n.photo) + '" alt="" loading="lazy" />' : '') +
+          '<div class="news-date">' + esc(n.date) + '</div><div class="news-text">' + esc(n.text) + '</div></div>').join("")
+          : '<div class="empty">Новостей пока нет — всё важное придёт и сюда, и в чат.</div>';
+      } catch (e) { $("newsBody").innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+    }
+    async function checkNews() {
+      try {
+        const r = await api("/api/news", { timeout: 12000 });
+        const top = r.items.length ? r.items[0].id : 0;
+        $("newsDot").classList.toggle("hidden", !(top && top > Number(lsGet("wc_news_seen", 0))));
+        $("newsRowSub").textContent = r.items.length ? "Последняя: " + r.items[0].date : "Обновления и акции";
+      } catch (e) {}
+    }
+
+    // ---------- Поддержка ----------
+    async function sendSupport() {
+      const text = $("supportText").value.trim();
+      if (text.length < 3) { snack("Напиши вопрос подробнее", "bad"); return; }
+      if (!apiOk) { openTg("themaxudo"); return; }
+      try {
+        await api("/api/support", { body: { text } });
+        $("supportText").value = ""; closeSheet();
+        snack("Отправлено! Ответ придёт в чат с ботом", "ok");
+      } catch (e) { snack(e.message, "bad"); }
+    }
+
+    // ---------- История с сервера ----------
+    async function loadServerHistory() {
+      try {
+        const r = await api("/api/history", { timeout: 12000 });
+        if (!r.items.length) return;
+        const seen = new Set(S.history.map(h => h.title));
+        r.items.forEach(it => {
+          const t = (it.title || "").replace(/^Mini App:\s*/, "");
+          if (!seen.has(t)) S.history.push({ title: t, time: (it.time || "").replace("T", " ").slice(5, 16) });
+        });
+        S.history = S.history.slice(0, 20); renderHistory();
+      } catch (e) {}
+    }
+
+    // ---------- Видео, присланное боту в чат ----------
+    async function loadChatSource(id) {
+      switchView("studio");
+      $("srcTag").textContent = "Забираю из чата…"; $("srcTag").className = "pill";
+      try {
+        let job = (await api("/api/source?id=" + encodeURIComponent(id))).job;
+        if (job.status === "running") job = await waitJob(job, $("srvJob"));
+        if (!job || job.status !== "done") { snack((job && job.error) || "Не удалось забрать видео", "bad"); return; }
+        setSource(job.file_url, job.name, false, job.id);
+        snack("Видео из чата загружено в студию", "ok");
+      } catch (e) { snack(e.message, "bad"); }
+    }
+
+    // ---------- Результат с несколькими файлами (моменты) ----------
+    function renderJobFiles(box, job, key) {
+      CARD_JOBS[key] = job;
+      const files = job.files && job.files.length ? job.files : [{ url: job.file_url, name: job.name, label: job.title, size: job.size }];
+      box.innerHTML = files.map((f, i) =>
+        '<div class="vcard" style="margin-top:10px"><video src="' + esc(f.url) + '" controls playsinline preload="metadata"></video>' +
+        '<div class="vmeta"><span>' + esc(f.label || ("Клип " + (i + 1))) + '</span><span>' + ((f.size || 0) / 1048576).toFixed(1) + ' МБ</span></div>' +
+        '<div class="btn-row" style="margin-top:0"><button class="btn sm" onclick="downloadUrl(\'' + esc(f.url) + '?dl=1\',\'' + esc(f.name) + '\')">Сохранить</button>' +
+        '<button class="btn ghost sm" onclick="useRemoteClip(\'' + esc(f.url) + '\',\'' + esc(f.name) + '\')">В студию</button></div></div>').join("") +
+        (job.to_chat ? '<div class="note"><svg class="i xs"><use href="#i-send"/></svg><span>Файлы также отправлены тебе в чат с ботом.</span></div>'
+                     : '<button class="btn ghost sm" style="margin-top:10px;width:100%" onclick="sendJobToChat(CARD_JOBS.' + key + ')">Отправить в Telegram</button>');
+    }
+    async function runServerMoments(url) {
+      const cnt = Number($("csCount").value) || 3, dur = Number($("csDur").value) || 30;
+      const box = $("csOut");
+      if (!S.isPremium && S.usedToday >= S.dailyLimit) { snack("Лимит на сегодня исчерпан", "bad"); openPlans(); return; }
+      box.innerHTML = '<div class="vcard" id="csCard"><div class="cardjob"></div></div>';
+      try {
+        const body = { count: cnt, clip_len: dur, to_chat: toChatOn() };
+        if (url) body.url = url; else body.src_job = S.srcJobId;
+        const r = await api("/api/moments", { body, timeout: 60000 });
+        const job = await waitJob(r.job, $("csCard").querySelector(".cardjob"));
+        if (!job || job.status !== "done") { box.innerHTML = '<div class="empty">' + esc((job && job.error) || "Не получилось нарезать") + '</div>'; return; }
+        renderJobFiles(box, job, "moments");
+        addHistory("Моменты ×" + (job.files ? job.files.length : 1));
+        snack("Готово: " + (job.files ? job.files.length : 1) + " клипов", "ok");
+        refreshMe(true);
+      } catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; if (e.status === 402) openPlans(); }
+    }
+
+    // ---------- Открытие нужного раздела из чата (кнопки бота) ----------
+    const SHEET_OPENERS = { plans: () => openPlans(), bonus: () => openBonus(), news: () => openNews(), ref: () => { openSheet("ref"); loadRef(); } };
+    function applyDeepLink() {
+      const tab = params.get("tab"), sheet = params.get("sheet");
+      const url = params.get("url"), tc = params.get("tc"), src = params.get("src"), check = params.get("check");
+      if (tab && $("view-" + tab)) switchView(tab);
+      if (url) { $("dlUrl").value = url; $("csUrl").value = url; }
+      if (tc) $("dlTc").value = tc;
+      if (check && $("checkInput")) { $("checkInput").value = check; }
+      if (src) { loadChatSource(src); return; }
+      if (sheet) {
+        if (SHEET_OPENERS[sheet]) SHEET_OPENERS[sheet]();
+        else if ($("sheet-" + sheet)) openSheet(sheet);
+      }
+      if (check && $("checkInput")) scrollToId("checkInput");
+    }
+
     Object.assign(window, {
+      openPlans, buyPlan, startTrial, topupFor, openBonus, claimBonus, openNews, sendSupport, toggleToChat, loadRef,
+      runServerMoments, loadChatSource, loadBoostCatalog,
       openSheet, closeSheet, switchView, scrollToId, openTg, copyText, botAction,
       payWith, buyPremium, activatePromo, pickBoost, submitBoost,
       onFilePicked, makeDemoVideo, quickFind, useRemoteClip, downloadUrl,
