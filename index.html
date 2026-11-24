@@ -122,6 +122,7 @@
     .shop-desc { white-space: pre-wrap; font-size: 13.5px; line-height: 1.45; color: var(--text-2); max-height: 38vh; overflow-y: auto; margin-bottom: 12px; word-break: break-word; }
     .shop-key { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); margin-top: 8px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; word-break: break-all; }
     .shop-key span { flex: 1; }
+    .note a { color: var(--accent); text-decoration: none; font-weight: 500; }
     .sheet-scroll { max-height: 62vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
     /* ---------- Header ---------- */
@@ -776,6 +777,8 @@
         <button class="li tap" onclick="openSheet('ref'); loadRef()"><div class="lic"><svg class="i sm"><use href="#i-user"/></svg></div><div class="lt"><b>Пригласить друзей</b><small>3 друга = 7 дней Premium</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
         <button class="li tap" onclick="openSheet('scam')"><div class="lic"><svg class="i sm"><use href="#i-ban"/></svg></div><div class="lt"><b>Скам-рекламодатели</b><small id="scamRowSub">Чёрный список</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
         <button class="li tap" onclick="openSheet('support')"><div class="lic"><svg class="i sm"><use href="#i-headset"/></svg></div><div class="lt"><b>Поддержка</b><small>Ответ придёт в чат с ботом</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
+        <button class="li tap" onclick="openExternal(LEGAL.terms)"><div class="lic"><svg class="i sm"><use href="#i-text"/></svg></div><div class="lt"><b>Пользовательское соглашение</b><small>Правила использования WestCut</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
+        <button class="li tap" onclick="openExternal(LEGAL.privacy)"><div class="lic"><svg class="i sm"><use href="#i-shield"/></svg></div><div class="lt"><b>Политика конфиденциальности</b><small>Какие данные мы храним</small></div><svg class="i sm faint"><use href="#i-chev"/></svg></button>
       </div>
 
       <div class="list">
@@ -828,6 +831,7 @@
     <div class="list" id="methods"></div>
     <div id="payWait"></div>
     <div class="note"><svg class="i xs"><use href="#i-info"/></svg><span id="payNote">Оплата открывается прямо здесь. Баланс зачислится автоматически сразу после оплаты.</span></div>
+    <div class="note"><svg class="i xs"><use href="#i-shield"/></svg><span>Пополняя баланс, ты принимаешь <a href="#" onclick="openExternal(LEGAL.terms);return false">соглашение</a> и <a href="#" onclick="openExternal(LEGAL.privacy);return false">политику конфиденциальности</a>.</span></div>
   </div>
 
   <div class="sheet" id="sheet-kino">
@@ -983,6 +987,7 @@
       <div class="kv" style="margin-bottom:10px"><span>Цена</span><b id="shopItemPrice"></b></div>
       <div class="shop-desc" id="shopItemDesc"></div>
       <button class="btn" id="shopBuyBtn" onclick="buyShopItem()">Купить</button>
+      <div class="note" style="margin-top:10px"><svg class="i xs"><use href="#i-info"/></svg><span>Покупая, ты принимаешь <a href="#" onclick="openExternal(LEGAL.terms);return false">соглашение</a> и <a href="#" onclick="openExternal(LEGAL.privacy);return false">политику конфиденциальности</a>.</span></div>
       <div id="shopBuyResult"></div>
     </div>
   </div>
@@ -1093,6 +1098,11 @@
     function openTg(username) {
       const url = "https://t.me/" + username;
       if (tg && tg.openTelegramLink) tg.openTelegramLink(url); else window.open(url, "_blank", "noopener");
+    }
+    const LEGAL = { terms: "https://telegra.ph/Polzovatelskoe-soglashenie-11-24-54", privacy: "https://telegra.ph/Politika-konfidencialnosti-11-24-79" };
+    window.LEGAL = LEGAL;
+    function legalNote() {
+      return '<div class="note" style="margin-top:10px"><svg class="i xs"><use href="#i-info"/></svg><span>Оплачивая, ты принимаешь <a href="#" onclick="openExternal(LEGAL.terms);return false">соглашение</a> и <a href="#" onclick="openExternal(LEGAL.privacy);return false">политику конфиденциальности</a>.</span></div>';
     }
     function openExternal(url) {
       if (tg && tg.openLink) tg.openLink(url); else window.open(url, "_blank", "noopener");
@@ -3079,7 +3089,7 @@
         '<div class="kv"><span>К оплате</span><b>' + money(q.price) + (per.discount ? ' (−' + per.discount + '%)' : '') + '</b></div></div>' +
         (lack > 0.0001
           ? '<button class="btn" onclick="topupFor(' + lack.toFixed(2) + ')"><svg class="i sm"><use href="#i-plus"/></svg>Пополнить на ' + money(lack) + '</button>'
-          : '<button class="btn" id="planBuyBtn" onclick="buyPlan()"><svg class="i sm"><use href="#i-crown"/></svg>Оплатить ' + money(q.price) + ' с баланса</button>');
+          : '<button class="btn" id="planBuyBtn" onclick="buyPlan()"><svg class="i sm"><use href="#i-crown"/></svg>Оплатить ' + money(q.price) + ' с баланса</button>') + legalNote();
     }
     function topupFor(amount) {
       S.topupAmt = Math.ceil(Number(amount) * 100) / 100;
