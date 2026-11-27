@@ -508,6 +508,7 @@
           <button data-v="mirror">Зеркало</button>
           <div class="mgroup">Эффекты</div>
           <button data-v="subs">Субтитры</button>
+          <button data-v="smartcrop">9:16 по лицу</button>
           <button data-v="vertical">Формат 9:16</button>
           <button data-v="nosilence">Без пауз</button>
           <button data-v="enhance">Улучшить</button>
@@ -704,11 +705,22 @@
       </div>
 
       <div class="card">
-        <div class="card-h"><h3>Хуки и хэштеги</h3><span class="pill">RU · US</span></div>
-        <input type="text" id="hookTopic" class="input" placeholder="Ниша или фильм" style="margin-bottom:10px" />
+        <div class="card-h"><h3>Хуки и хэштеги</h3><span class="pill">ИИ · каждый раз новые</span></div>
+        <input type="text" id="hookTopic" class="input" placeholder="Тема ролика: фильм, персонаж, ниша" style="margin-bottom:10px" />
+        <div class="grid2" style="margin-bottom:10px">
+          <select id="hookLang" class="select">
+            <option value="ru">🇷🇺 Русский</option>
+            <option value="en">🇺🇸 English (US)</option>
+          </select>
+          <select id="hookPlatform" class="select">
+            <option value="TikTok">TikTok</option>
+            <option value="YouTube Shorts">YouTube Shorts</option>
+            <option value="Instagram Reels">Reels</option>
+          </select>
+        </div>
         <div class="btn-row" style="margin-top:0">
-          <button class="btn ghost" onclick="genHooks('hooks')">5 хуков</button>
-          <button class="btn ghost" onclick="genHooks('tags')">Теги + описание</button>
+          <button class="btn ghost" onclick="genHooks('hooks')">7 хуков</button>
+          <button class="btn ghost" onclick="genHooks('tags')">Название + теги</button>
         </div>
         <div id="hooksOut" class="out hidden"></div>
         <button id="hooksCopy" class="text-btn hidden" onclick="copyText(document.getElementById('hooksOut').textContent)">Скопировать</button>
@@ -869,12 +881,13 @@
 
   <div class="sheet" id="sheet-clipsaw">
     <div class="grab"></div>
-    <div class="sheet-h"><h3>Нарезка моментов</h3><button class="x" onclick="closeSheet()"><svg class="i sm"><use href="#i-x"/></svg></button></div>
+    <div class="sheet-h"><h3>ИИ-нарезка моментов</h3><button class="x" onclick="closeSheet()"><svg class="i sm"><use href="#i-x"/></svg></button></div>
     <div class="field"><input type="url" id="csUrl" class="input" placeholder="Ссылка на видео или оставь пустым для своего файла" /></div>
     <div class="grid2" style="margin-bottom:12px">
       <select id="csCount" class="select"><option value="3">3 момента</option><option value="5">5 моментов</option><option value="7">7 моментов</option></select>
       <select id="csDur" class="select"><option value="15">по 15 сек</option><option value="30" selected>по 30 сек</option><option value="45">по 45 сек</option><option value="60">по 60 сек</option></select>
     </div>
+    <div class="card-sub" style="margin:0 0 12px">ИИ слушает ролик и выбирает законченные сильные фрагменты — с цепляющим заголовком для каждого клипа.</div>
     <button class="btn" onclick="runClipsaw()"><svg class="i sm"><use href="#i-cut"/></svg>Нарезать</button>
     <div id="csOut" class="vlist" style="margin-top:12px"></div>
   </div>
@@ -2167,8 +2180,8 @@
       const url = $("dlUrl").value.trim();
       if (!/^https?:\/\//i.test(url)) { snack("Вставь ссылку на ролик", "bad"); return; }
       const box = $("dlOut");
-      if (!isSupportedUrl(url)) {
-        box.innerHTML = '<div class="empty">Эта площадка пока не поддерживается.<button class="btn ghost" onclick="openTg(\'themaxudo\')">Написать в поддержку</button></div>';
+      if (!isSupportedUrl(url) && !apiOk) {
+        box.innerHTML = '<div class="empty">Видео с любых сайтов качает сервер — сейчас он не на связи, попробуй через минуту.<button class="btn ghost" onclick="openTg(\'themaxudo\')">Написать в поддержку</button></div>';
         return;
       }
       const tc = $("dlTc").value.trim(), lang = $("dlLang").value;
@@ -2744,6 +2757,7 @@
       anticopy: "Защита от авто-проверки на повтор (анти-АП).",
       mirror: "Зеркалит видео по горизонтали.",
       subs: "Распознаёт речь и вшивает субтитры выбранного стиля.",
+      smartcrop: "Умный 9:16: нейросеть находит лицо и камера сама ведёт за говорящим — идеально для подкастов, интервью и стримов.",
       vertical: "Делает 1080×1920 для Shorts, Reels и TikTok с размытым фоном.",
       nosilence: "Вырезает паузы и тишину — ролик становится динамичнее.",
       enhance: "Повышает чёткость, цвет и громкость голоса.",
@@ -2891,13 +2905,58 @@
       }
     }
 
-    function genHooks(mode) {
+    // Запасной генератор хуков (если сервер недоступен): разные приёмы, случайный выбор — без повторов
+    const HOOKS_RU = {
+      "Интрига": ["Никто не ждал, что {t} закончится вот так", "Смотри, что происходит на {s} секунде", "В «{t}» есть деталь, которую замечают со второго раза", "То, что случилось дальше, никто не планировал"],
+      "Цифра": ["{n} из 10 человек ошибаются насчёт «{t}»", "{n} вещей про «{t}», о которых молчат", "За {s} секунд — всё, что нужно знать про «{t}»"],
+      "Провокация": ["«{t}» переоценён — и вот почему", "Непопулярное мнение про «{t}»", "Все хвалят «{t}», но посмотрите на это"],
+      "POV": ["POV: ты впервые увидел «{t}»", "POV: ты единственный, кто понял эту сцену", "POV: тебе показали это без предупреждения"],
+      "Вопрос": ["А ты бы поступил так же?", "Кто прав в этой сцене?", "Угадаешь, чем это кончится?"],
+      "Польза": ["Сохрани, если тоже любишь «{t}»", "Запомни это, когда будешь смотреть «{t}»"],
+      "История": ["Он думал, что это обычный день…", "Она сказала одну фразу — и всё изменилось", "Я пересмотрел «{t}» и заметил кое-что странное"],
+      "Контраст": ["Начало «{t}» vs его конец", "Сначала смешно, потом страшно — это «{t}»"]
+    };
+    const HOOKS_EN = {
+      "Curiosity": ["Nobody expected {t} to end like this", "Watch what happens at second {s}", "There's a detail in {t} most people miss"],
+      "Number": ["{n} out of 10 people get {t} wrong", "{n} things about {t} nobody talks about"],
+      "Hot take": ["{t} is overrated — here's why", "Unpopular opinion about {t}"],
+      "POV": ["POV: you see {t} for the first time", "POV: nobody warned you about this"],
+      "Question": ["Would you do the same?", "Who's right in this scene?", "Can you guess how this ends?"],
+      "Value": ["Save this if you love {t}", "Remember this next time you watch {t}"],
+      "Story": ["He thought it was a normal day…", "I rewatched {t} and noticed something weird"],
+      "Contrast": ["{t}: expectation vs reality", "Funny at first, terrifying at the end"]
+    };
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    function localHooks(mode, t, lang) {
+      const fill = x => x.replace(/\{t\}/g, t).replace(/\{n\}/g, 7 + Math.floor(Math.random() * 3)).replace(/\{s\}/g, 3 + Math.floor(Math.random() * 10));
+      if (mode === "hooks") {
+        const pool = lang === "en" ? HOOKS_EN : HOOKS_RU;
+        return Object.keys(pool).sort(() => Math.random() - 0.5).slice(0, 7).map((k, i) => (i + 1) + ". [" + k + "] " + fill(pick(pool[k]))).join("\n");
+      }
+      const words = (t.toLowerCase().match(/[\wа-яёіїєґ]+/g) || []).filter(w => w.length > 2).slice(0, 3);
+      const own = words.length ? ["#" + words.join("")].concat(words.map(w => "#" + w)) : [];
+      const ru = ["#фильмы", "#сериалы", "#кинонарезка", "#чтопосмотреть", "#моментизфильма", "#сцена", "#рек", "#рекомендации", "#тренды", "#shorts"];
+      const en = ["#movies", "#movieclips", "#filmtok", "#series", "#whattowatch", "#moviescene", "#fyp", "#viral", "#reels", "#shorts"];
+      const tags = own.concat((lang === "en" ? en : ru).sort(() => Math.random() - 0.5).slice(0, 8));
+      return lang === "en"
+        ? "Title:\n" + pick(["This " + t + " moment is worth a rewatch", t + ": the scene everyone talks about", "You definitely missed this in " + t]) +
+          "\n\nDescription:\n" + pick(["What would you do? Comment below 👇", "Watch till the end and tell me who's right 👇"]) + "\n\nHashtags:\n" + tags.join(" ")
+        : "Название:\n" + pick(["Этот момент из «" + t + "» стоит пересмотреть", "«" + t + "»: сцена, о которой все говорят", "Ты точно не заметил это в «" + t + "»"]) +
+          "\n\nОписание:\n" + pick(["А как бы ты поступил? Пиши в комментариях 👇", "Досмотри и напиши, кто прав 👇"]) + "\n\nХэштеги:\n" + tags.join(" ");
+    }
+    async function genHooks(mode) {
       const t = $("hookTopic").value.trim() || "фильмы и сериалы";
+      const lang = $("hookLang").value, platform = $("hookPlatform").value;
       const out = $("hooksOut");
-      out.textContent = mode === "hooks"
-        ? "1. 99% зрителей не заметили эту деталь в «" + t + "»…\n2. Вот почему этот момент вырезали из эфира\n3. Он ещё не знал, чем закончится этот разговор\n4. Название и полная серия — в шапке профиля\n5. Самая сильная сцена за весь сезон"
-        : "Чем закончится эта сцена? Полная версия — в нашем ТГ в шапке профиля 👇\n\n#фильмы #сериалы #лучшиймомент #кинонарезка #шортс #рек #fyp #viral #movieclips #" + t.replace(/\s+/g, "").toLowerCase();
       out.classList.remove("hidden"); $("hooksCopy").classList.remove("hidden");
+      if (apiOk) {
+        out.innerHTML = '<div class="row"><span class="spin"></span><span class="muted">ИИ подбирает варианты…</span></div>';
+        try {
+          const r = await api("/api/hooks", { body: { topic: t, mode, lang, platform }, timeout: 60000 });
+          out.textContent = r.text; haptic.ok(); return;
+        } catch (e) { /* ниже — запасной генератор */ }
+      }
+      out.textContent = localHooks(mode, t, lang);
       haptic.tap();
     }
 
